@@ -4,34 +4,34 @@ import java.util.*
 
 class TriangleIndexGraph<T>(val nodes:List<T>, val triangleEdges : ShortArray) {
 
-    fun getChildren(value: T) : List<Node<T>>?{
-        val valueIndex = nodes.indexOf(value)
+    fun getChildren(nodeValue: T) : List<Node<T>>?{
+        val valueIndex = nodes.indexOf(nodeValue)
         if(valueIndex == -1){
             return null
         }
-        val everyOcurranceOfValueInTriangle = mutableListOf<Int>()
+        val indicesOfValueInTriangle = mutableListOf<Int>()
         triangleEdges.forEachIndexed{index,value->
             if(value==valueIndex.toShort()){
-                everyOcurranceOfValueInTriangle.add(index)
+                indicesOfValueInTriangle.add(index)
             }
         }
         val children = mutableListOf<Node<T>>()
-        everyOcurranceOfValueInTriangle.forEach{getChildrenFromIndex(it.toShort(), children)}
+        indicesOfValueInTriangle.forEach{getChildrenFromIndex(it.toShort(), children)}
         return children
     }
 
     private fun getChildrenFromIndex(index:Short, children:MutableList<Node<T>>){
-        var triangleIndex = index / 3
-        val nodeIndex = triangleIndex - index % 3
+        var triangleIndex = index - index % 3
+        val nodeIndex = index.toInt()
         repeat(3){
             if(triangleIndex!=nodeIndex){
-                children.add(Node(nodes[triangleIndex]))
+                children.add(Node(nodes[triangleEdges[triangleIndex].toInt()]))
             }
             triangleIndex++
         }
     }
 
-    fun getSpanningTree(value:T):Node<T>{
+    fun getSpanningTree():Node<T>{
         val stack = Stack<T>()
         val visited = mutableSetOf<T>()
         stack.push(nodes[0])
