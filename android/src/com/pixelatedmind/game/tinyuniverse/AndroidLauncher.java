@@ -1,0 +1,16 @@
+package com.pixelatedmind.game.tinyuniverse;
+
+import android.os.Bundle;
+
+import com.badlogic.gdx.backends.android.AndroidApplication;
+import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.pixelatedmind.game.tinyuniverse.TinyUniverseGame;
+
+public class AndroidLauncher extends AndroidApplication {
+	@Override
+	protected void onCreate (Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+		initialize(new TinyUniverseGame(), config);
+	}
+}
