@@ -124,7 +124,73 @@ class WorldCellGenerator {
                 edges.add(e2)
             }
         }
+        val hallways = findHallways(edges,5f)
         return edges
+    }
+    fun Rectangle.right() : Float{
+        return x+width
+    }
+    fun Rectangle.bottom() : Float{
+        return y+height
+    }
+    fun Rectangle.xAxisOverlap(other:Rectangle, output: Vector2) : Vector2?{
+        if(x>other.right() || right()< other.x){
+            return null
+        }
+        return output.set(
+            x.coerceAtLeast(other.x),
+            right().coerceAtMost(other.right())
+        )
+    }
+    fun Rectangle.yAxisOverlap(other:Rectangle, output:Vector2):Vector2?{
+        if(y>other.bottom() || y<other.y){
+            return null
+        }
+        return output.set(
+            y.coerceAtLeast(other.y),
+            bottom().coerceAtMost(other.bottom())
+        )
+    }
+
+    private fun findHallways(edges:List<Edge<Rectangle>>, hallwaySize:Float):List<Rectangle>{
+        val v1 = Vector2()
+        val v2 = Vector2()
+        val output = mutableListOf<Rectangle>()
+        edges.forEach {
+            val xOverlap = it.n1.value.xAxisOverlap(it.n2.value, v1)
+            val yOverlap = it.n1.value.yAxisOverlap(it.n2.value, v2)
+            //both should never be non-null at the same time
+            //
+            //if both are null OR
+            //overlapped on X axis but overlap was too small OR
+            //overlapped on y axis but overlap was too small
+            //  then we do L shape
+            if((xOverlap==null && yOverlap==null) ||
+                (xOverlap!=null && (xOverlap.y-xOverlap.x)>hallwaySize) ||
+                (yOverlap!=null && (yOverlap.y-yOverlap.x)>hallwaySize)){
+                //L shape
+
+            }
+            else if(xOverlap!=null && xOverlap.y-xOverlap.x>hallwaySize){
+                val left = xOverlap.x+(xOverlap.y-xOverlap.x)/2-hallwaySize/2
+                val rect = Rectangle()
+                rect.x = left
+                rect.width = hallwaySize
+                if(it.n1.value.y<it.n2.value.y){
+                    rect.y = it.n1.value.bottom()
+                    rect.height = it.n2.value.y-it.n1.value.bottom()
+                }
+                else{
+                    rect.y = it.n2.value.bottom()
+                    rect.height = it.n1.value.y - it.n2.value.bottom()
+                }
+                output.add(rect)
+            }
+            else if(yOverlap!=null && yOverlap.y-yOverlap.y>hallwaySize){
+
+            }
+        }
+        return output
     }
 
     fun shortArrayFrom(nonOverlappingRects : List<Rectangle>):FloatArray {

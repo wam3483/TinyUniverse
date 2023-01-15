@@ -36,7 +36,7 @@ class TinyUniverseGame : ApplicationAdapter {
     override fun create() {
         batch = SpriteBatch()
         shapeRenderer = ShapeRenderer()
-        shapeRenderer!!.setAutoShapeType(true)
+        shapeRenderer.setAutoShapeType(true)
         camera = OrthographicCamera(Gdx.graphics.getWidth().toFloat(),Gdx.graphics.getHeight().toFloat());
         img = Texture("badlogic.jpg")
         camera!!.zoom = 1F
