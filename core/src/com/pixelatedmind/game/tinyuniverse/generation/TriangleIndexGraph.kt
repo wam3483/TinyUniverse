@@ -35,31 +35,22 @@ class TriangleIndexGraph<T>(val nodes:List<T>, val triangleEdges : ShortArray) {
         val stack = Stack<T>()
         val visited = mutableSetOf<T>()
         stack.push(nodes[0])
-        visited.add(nodes[0])
         val graph = Node(nodes[0])
         while(stack.isNotEmpty()){
             val nodeValue = stack.pop()
+            visited.add(nodeValue)
             val children = getChildren(nodeValue)
-            val unvisitedChild = children?.firstOrNull { !visited.contains(it.value) }
-            if(unvisitedChild!=null)
-            {
-                //we found an edge in our spanning tree.
-                val graphNode = graph.getNodeFor(nodeValue)!!
-                val edgeEnd = Node(unvisitedChild.value)
-                graphNode.children.add(edgeEnd)
-                edgeEnd.children.add(graphNode)
-                visited.add(unvisitedChild.value)
-                stack.push(unvisitedChild.value)
+            val graphNode = graph.getNodeFor(nodeValue)
+            if(children!=null && graphNode!=null){
+                val unvisitedChildren = children.filter { !visited.contains(it.value) }
+                unvisitedChildren.forEach {
+                    visited.add(it.value)
+                    //we found an edge in our spanning tree.
+                    graphNode.children.add(Node(it.value))
+                    stack.push(it.value)
+                }
             }
         }
         return graph
     }
-
-//    fun getMinimumSpanningTreeRecursive(msp: MutableList<Node<T>>){
-//        val node = nodes[0]
-//        val edges = getEdges(node)
-//        if(msp.contains()){
-//
-//        }
-//    }
 }

@@ -18,10 +18,11 @@ class WorldCellGenerator {
     private val flock : Flock
     private val triangulator : DelaunayTriangulator
 
-    constructor(roomsToGenerate:Int, meanRoomDimension:Float, standardDeviation:Float, minRoomDim:Vector2){
+    constructor(roomsToGenerate:Int, meanRoomDimension:Float, standardDeviation:Float, minRoomDim:Vector2, seed:Long?=null){
         triangulator = DelaunayTriangulator()
         boids = mutableListOf<GenericBoidImpl<Rectangle>>()
-        random = Random()
+        val seedInput = seed ?: Random().nextLong()
+        random = Random(seedInput)
 
         generateBoids(roomsToGenerate, meanRoomDimension, standardDeviation, minRoomDim)
 
@@ -29,6 +30,7 @@ class WorldCellGenerator {
         boids.forEach{it.value.getCenter(it.getPosition())}
         val rule = SeparationSteeringRuleImpl()
         flock = Flock(boids, listOf(rule))
+        println("Dungeon seed:"+seedInput)
     }
 
     private fun generateBoids(roomsToGenerate:Int, meanRoomDimension:Float, standardDeviation:Float, minRoomDim:Vector2){
@@ -36,10 +38,11 @@ class WorldCellGenerator {
         val allRects = mutableListOf<Rectangle>()
         while(allRects.size < roomsToGenerate){
             val position = getRandomPointInEllipse(radius.toFloat(), radius.toFloat())
-            position.x = roundDown(position.x, 1F)
-            position.y = roundDown(position.y, 1F)
             val w : Float = abs(randomNormalDist(meanRoomDimension, standardDeviation))
             val h : Float = abs(randomNormalDist(meanRoomDimension, standardDeviation))
+            position.sub(w/2,h/2)
+            position.x = roundDown(position.x, 1F)
+            position.y = roundDown(position.y, 1F)
             if(w>minRoomDim.x && h>minRoomDim.y) {
                 allRects.add(
                         Rectangle(position.x, position.y,
@@ -60,7 +63,7 @@ class WorldCellGenerator {
         val avgWidth = boids.map{it.value.width}.sum()/boids.size * 1.25F
         val avgHeight = boids.map{it.value.height}.sum()/boids.size * 1.25F
         val rooms = boids.filter{
-            it.value.width>=avgWidth && it.value.height >=avgHeight
+            it.value.width>=avgWidth || it.value.height >=avgHeight
         }
         return rooms.map{it.value}
     }
@@ -68,7 +71,7 @@ class WorldCellGenerator {
     private fun getRandomPointInEllipse(ellipse_width:Float, ellipse_height:Float) : Vector2{
         val t = 2*Math.PI*random.nextFloat()
         val u = random.nextFloat()+random.nextFloat()
-        var r : Float? = null
+        var r : Float?
         if (u > 1)
             r = 2-u
         else
@@ -93,8 +96,8 @@ class WorldCellGenerator {
         return true
     }
 
-    fun newDelunuaryGraphFrom(nonOverlappingRects : List<Rectangle>):TriangleIndexGraph<Rectangle>{
-        val graphPoints = shortArrayFrom(nonOverlappingRects)
+    fun newDelunuaryGraphFrom(roomRects : List<Rectangle>):TriangleIndexGraph<Rectangle>{
+        val graphPoints = shortArrayFrom(roomRects)
         val triangleGraphIndices = triangulator.computeTriangles(graphPoints,false)
         val ary = ShortArray(triangleGraphIndices.size)
         var index =0
@@ -102,8 +105,26 @@ class WorldCellGenerator {
             ary[index] = triangleGraphIndices.get(index)
             index++
         }
-        val delaunayGraph = TriangleIndexGraph(nonOverlappingRects.map{it}, ary)
+        val delaunayGraph = TriangleIndexGraph(roomRects.map{it}, ary)
         return delaunayGraph
+    }
+
+    fun newMainRoomGraph(roomRects : List<Rectangle>):List<Edge<Rectangle>>{
+        val connectedGraph = newDelunuaryGraphFrom(roomRects)
+        val spanningTree = connectedGraph.getSpanningTree()
+        val edges = spanningTree.getEdges().toMutableList()
+        val numEdgesToAdd = (edges.size * .15f).toInt()
+        var numAdded = 0
+        while(numAdded<numEdgesToAdd){
+            val edge = edges[random.nextInt(edges.size)]
+            val n1children = connectedGraph.getChildren(edge.n1.value)!!
+            val e2 = Edge(edge.n1, n1children[random.nextInt(n1children.size)])
+            if (edges.none { it.equals(e2) }) {
+                numAdded++
+                edges.add(e2)
+            }
+        }
+        return edges
     }
 
     fun shortArrayFrom(nonOverlappingRects : List<Rectangle>):FloatArray {
@@ -116,11 +137,17 @@ class WorldCellGenerator {
         return ary
     }
 
+    var timeAccumulator = 0f
+    val timestep = .01666f
     fun update(deltaSecs : Float) {
-        flock.update(deltaSecs)
-        boids.forEach{
-            it.value.x = roundDown(it.getPosition().x-it.value.width/2F,1F)
-            it.value.y = roundDown(it.getPosition().y-it.value.height/2F,1F)
+        timeAccumulator+=deltaSecs
+        while(timeAccumulator>=timestep) {
+            timeAccumulator -= timestep
+            flock.update(timestep)
+            boids.forEach {
+                it.value.x = roundDown(it.getPosition().x - it.value.width / 2F, 1F)
+                it.value.y = roundDown(it.getPosition().y - it.value.height / 2F, 1F)
+            }
         }
     }
 }
