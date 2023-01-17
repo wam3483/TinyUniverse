@@ -8,26 +8,36 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.math.Rectangle
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.generation.*
+import java.util.*
 
 class DungeonGeneratorViewer : ApplicationAdapter {
     lateinit var batch: SpriteBatch
     var img: Texture? = null
-    val generator = DungeonGenerator(50, 30f, 10f, Vector2(3f, 3f))//,-3302475581927919216)//, 8633074958013025850)
+    var generator : DungeonGenerator// -3302475581927919216 8633074958013025850
     lateinit var shapeRenderer: ShapeRenderer
     var camera : OrthographicCamera? = null
     lateinit var font : BitmapFont
 
     var regionModel : RegionModel? = null
 
-    var generationComplete = false
 
     constructor(){
-
+        val random = newRandom(8633074958013025850)
+        val positionFactory = VectorFactoryEllipseImpl(10f,10f, random)
+        val rectFactory = RectangleFactoryNormalDistributionImpl(positionFactory, random,30f,10f,3f,3f)
+        val rectSeparationDecorator = RectangleFactorySeparationDecoratorImpl(rectFactory)
+        generator = DungeonGenerator(rectSeparationDecorator, 50, random)
+        regionModel = generator.newMainRoomGraph()
     }
+
+
+    private fun newRandom(seed:Long?) : Random{
+        val inputSeed = seed ?: Random().nextLong()
+        return Random(inputSeed)
+    }
+
     override fun create() {
         batch = SpriteBatch()
         shapeRenderer = ShapeRenderer()
@@ -44,17 +54,11 @@ class DungeonGeneratorViewer : ApplicationAdapter {
         shapeRenderer.setProjectionMatrix(camera!!.combined)
         batch.setProjectionMatrix(camera!!.combined)
 
-        val rooms = mutableListOf<Rectangle>()
-        if(generationComplete){
-            shapeRenderer.setColor(0f,1f,0f,1f)
-            rooms.addAll(generator.getMainRooms())
-        }
-
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
-        generator.getAllRooms().forEach{rect->
+        regionModel!!.allRooms.forEach{rect->
             shapeRenderer.begin()
-            if(rooms.contains(rect)){
+            if(regionModel!!.mainRoomGraph.getAllValues().contains(rect)){
                 shapeRenderer.setColor(0f, 1f, 0f, 1f)
             }
             else if(regionModel!=null && regionModel!!.subrooms.contains(rect)){
@@ -112,13 +116,6 @@ class DungeonGeneratorViewer : ApplicationAdapter {
             shapeRenderer.set(ShapeRenderer.ShapeType.Filled)
             regionModel!!.doors.forEach{shapeRenderer.circle(it.x,it.y,2f)}
             shapeRenderer.end()
-        }
-        generator.update(Gdx.graphics.deltaTime)
-        if(!generationComplete && generator.isGenerationComplete()){
-            val mainRooms = generator.getMainRooms()
-            val potentialSubRooms = generator.getAllRooms().filter{!mainRooms.contains(it)}
-            regionModel = generator.newMainRoomGraph(mainRooms, potentialSubRooms)
-            generationComplete = true
         }
     }
 

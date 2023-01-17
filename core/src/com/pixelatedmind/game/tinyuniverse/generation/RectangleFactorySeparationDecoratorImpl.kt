@@ -6,7 +6,7 @@ import com.pixelatedmind.game.tinyuniverse.flocking.GenericBoidImpl
 import com.pixelatedmind.game.tinyuniverse.flocking.SeparationSteeringRuleImpl
 import kotlin.system.measureTimeMillis
 
-class RectangleFactorySeparationDecoratorImp(private val rectFactory:RectangleFactory, private val secsToRunSeparationSimulation : Float=20f) : RectangleFactory {
+class RectangleFactorySeparationDecoratorImpl(private val rectFactory:RectangleFactory, private val maxSecsToRunSeparationSimulation : Float=20f) : RectangleFactory {
     override fun new(numRects: Int): List<Rectangle> {
         val rects = rectFactory.new(numRects)
         val boids = rects.map{ GenericBoidImpl(it) }
@@ -15,7 +15,7 @@ class RectangleFactorySeparationDecoratorImp(private val rectFactory:RectangleFa
         val timestep = .01666f
         var elapsedTime = 0L
         while(anyRectanglesOverlap(rects)) {
-            if(elapsedTime>=secsToRunSeparationSimulation){
+            if(elapsedTime>=maxSecsToRunSeparationSimulation*1000){
                 //TODO throw typed exception instead?
                 throw Exception()
             }
@@ -44,10 +44,10 @@ class RectangleFactorySeparationDecoratorImp(private val rectFactory:RectangleFa
         rects.forEach{b1->
             rects.forEach{b2->
                 if(b1!=b2 && (b1.overlaps(b2) || b1.contains(b2))){
-                    return false
+                    return true
                 }
             }
         }
-        return true
+        return false
     }
 }

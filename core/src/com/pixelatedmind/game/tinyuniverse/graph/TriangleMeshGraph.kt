@@ -1,8 +1,21 @@
 package com.pixelatedmind.game.tinyuniverse.graph
 
+import com.badlogic.gdx.math.DelaunayTriangulator
 import java.util.*
 
-class TriangleMeshGraph<T>(val vertexValues:List<T>, val triangleMeshEdges : ShortArray) {
+class TriangleMeshGraph<T>(val vertexValues:List<T>, vertexPositions:FloatArray){//, val triangleMeshEdges : ShortArray) {
+
+    private val triangulator = DelaunayTriangulator()
+    private var triangleMeshEdges : ShortArray
+    init{
+        val triangleGraphIndices = triangulator.computeTriangles(vertexPositions,false)
+        triangleMeshEdges = ShortArray(triangleGraphIndices.size)
+        var index =0
+        repeat(triangleGraphIndices.size){
+            triangleMeshEdges[index] = triangleGraphIndices.get(index)
+            index++
+        }
+    }
 
     fun getChildren(nodeValue: T) : List<Node<T>>?{
         val valueIndex = vertexValues.indexOf(nodeValue)

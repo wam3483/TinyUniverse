@@ -2,121 +2,38 @@ package com.pixelatedmind.game.tinyuniverse.generation
 
 import com.badlogic.gdx.math.DelaunayTriangulator
 import com.badlogic.gdx.math.Rectangle
-import com.badlogic.gdx.math.Vector2
-import com.pixelatedmind.game.tinyuniverse.flocking.Flock
-import com.pixelatedmind.game.tinyuniverse.flocking.GenericBoidImpl
-import com.pixelatedmind.game.tinyuniverse.flocking.SeparationSteeringRuleImpl
 import com.pixelatedmind.game.tinyuniverse.graph.Edge
 import com.pixelatedmind.game.tinyuniverse.graph.TriangleMeshGraph
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
 
 
-class DungeonGenerator {
-    private val random : Random
-    private val boids : MutableList<GenericBoidImpl<Rectangle>>
-    private val flock : Flock
-    private val triangulator : DelaunayTriangulator
+class DungeonGenerator(private val rectangleFactory:RectangleFactory,
+                       private val roomsToGenerate:Int,
+                       private val random:Random) {
 
-    constructor(roomsToGenerate:Int, meanRoomDimension:Float, standardDeviation:Float, minRoomDim:Vector2, seed:Long?=null){
-        triangulator = DelaunayTriangulator()
-        boids = mutableListOf<GenericBoidImpl<Rectangle>>()
-        val seedInput = seed ?: Random().nextLong()
-        random = Random(seedInput)
-
-        generateBoids(roomsToGenerate, meanRoomDimension, standardDeviation, minRoomDim)
-
-        //set boid position to center of rect it represents
-        boids.forEach{it.value.getCenter(it.getPosition())}
-        val rule = SeparationSteeringRuleImpl()
-        flock = Flock(boids, listOf(rule))
-        println("Dungeon seed:"+seedInput)
-    }
-
-    fun getAllRooms() : List<Rectangle>{
-        return boids.map{it.value}
-    }
-
-    private fun generateBoids(roomsToGenerate:Int, meanRoomDimension:Float, standardDeviation:Float, minRoomDim:Vector2){
-        val radius = 10
-        val allRects = mutableListOf<Rectangle>()
-        while(allRects.size < roomsToGenerate){
-            val position = getRandomPointInEllipse(radius.toFloat(), radius.toFloat())
-            val w : Float = abs(randomNormalDist(meanRoomDimension, standardDeviation))
-            val h : Float = abs(randomNormalDist(meanRoomDimension, standardDeviation))
-            position.sub(w/2,h/2)
-            position.x = roundDown(position.x, 1F)
-            position.y = roundDown(position.y, 1F)
-            if(w>minRoomDim.x && h>minRoomDim.y) {
-                allRects.add(
-                        Rectangle(position.x, position.y,
-                                roundDown(w, 1F),
-                                roundDown(h, 1F))
-                )
-            }
+    fun getMainRooms(allRooms:List<Rectangle>) : List<Rectangle> {
+        val avgWidth = allRooms.map{it.width}.sum()/allRooms.size * 1.25F
+        val avgHeight = allRooms.map{it.height}.sum()/allRooms.size * 1.25F
+        val rooms = allRooms.filter{
+            it.width>=avgWidth || it.height >=avgHeight
         }
-
-        boids.addAll(allRects.map{GenericBoidImpl(it)})
-    }
-
-    private fun randomNormalDist(mean : Float, std: Float) : Float{
-        return mean + random.nextGaussian().toFloat() * std
-    }
-
-    fun getMainRooms() : List<Rectangle> {
-        val avgWidth = boids.map{it.value.width}.sum()/boids.size * 1.25F
-        val avgHeight = boids.map{it.value.height}.sum()/boids.size * 1.25F
-        val rooms = boids.filter{
-            it.value.width>=avgWidth || it.value.height >=avgHeight
-        }
-        return rooms.map{it.value}
-    }
-
-    private fun getRandomPointInEllipse(ellipse_width:Float, ellipse_height:Float) : Vector2{
-        val t = 2*Math.PI*random.nextFloat()
-        val u = random.nextFloat()+random.nextFloat()
-        var r : Float?
-        if (u > 1)
-            r = 2-u
-        else
-            r = u
-        val result = Vector2(ellipse_width*r* cos(t).toFloat()/2, ellipse_height*r* sin(t).toFloat()/2)
-        return result
+        return rooms
     }
 
     private fun roundDown(value:Float, units:Float) : Float {
         return value - (value % units)
     }
 
-    //complete when there are no overlapping rectangles
-    fun isGenerationComplete() : Boolean{
-        boids.forEach{b1->
-            boids.forEach{b2->
-                if(b1!=b2 && (b1.value.overlaps(b2.value) || b1.value.contains(b2.value))){
-                    return false
-                }
-            }
-        }
-        return true
-    }
-
     fun newDelunuaryGraphFrom(roomRects : List<Rectangle>): TriangleMeshGraph<Rectangle> {
-        val graphPoints = shortArrayFrom(roomRects)
-        val triangleGraphIndices = triangulator.computeTriangles(graphPoints,false)
-        val ary = ShortArray(triangleGraphIndices.size)
-        var index =0
-        repeat(triangleGraphIndices.size){
-            ary[index] = triangleGraphIndices.get(index)
-            index++
-        }
-        val delaunayGraph = TriangleMeshGraph(roomRects.map{it}, ary)
+        val graphPoints = positionArrayFrom(roomRects)
+        val delaunayGraph = TriangleMeshGraph(roomRects, graphPoints)
         return delaunayGraph
     }
 
-    fun newMainRoomGraph(roomRects : List<Rectangle>, subRooms:List<Rectangle>):RegionModel{
-        val connectedGraph = newDelunuaryGraphFrom(roomRects)
+    fun newMainRoomGraph():RegionModel{
+        val allRooms = this.rectangleFactory.new(roomsToGenerate)
+        val mainRooms = this.getMainRooms(allRooms)
+        val connectedGraph = newDelunuaryGraphFrom(mainRooms)
         val spanningTree = connectedGraph.getSpanningTree()
         val edges = spanningTree.getEdges()
         val numEdgesToAdd = (edges.edges.size * .15f).toInt()
@@ -131,13 +48,13 @@ class DungeonGenerator {
             }
         }
 
-        val hallwaySolver = HallwaySolver(5f, edges, getAllRooms().filter{!roomRects.contains(it)})
+        val hallwaySolver = HallwaySolver(5f, edges, allRooms.filter{!mainRooms.contains(it)})
         val hallways = hallwaySolver.getHallways()
 
-        return RegionModel(edges, hallwaySolver.getSubrooms(hallways), connectedGraph, hallways.hallways, hallways.doors)
+        return RegionModel(allRooms, hallwaySolver.getSubrooms(hallways), edges,  connectedGraph, hallways.hallways, hallways.doors)
     }
 
-    fun shortArrayFrom(nonOverlappingRects : List<Rectangle>):FloatArray {
+    fun positionArrayFrom(nonOverlappingRects : List<Rectangle>):FloatArray {
         val ary = FloatArray(nonOverlappingRects.size*2)
         nonOverlappingRects.forEachIndexed{index,rect->
             val i2 = index*2
@@ -145,19 +62,5 @@ class DungeonGenerator {
             ary[i2+1] = rect.y
         }
         return ary
-    }
-
-    var timeAccumulator = 0f
-    val timestep = .01666f
-    fun update(deltaSecs : Float) {
-        timeAccumulator+=deltaSecs
-        while(timeAccumulator>=timestep) {
-            timeAccumulator -= timestep
-            flock.update(timestep)
-            boids.forEach {
-                it.value.x = roundDown(it.getPosition().x - it.value.width / 2F, 1F)
-                it.value.y = roundDown(it.getPosition().y - it.value.height / 2F, 1F)
-            }
-        }
     }
 }

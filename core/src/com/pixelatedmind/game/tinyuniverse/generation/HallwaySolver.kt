@@ -91,15 +91,21 @@ class HallwaySolver(val hallwaySize:Float, val mainRooms: EdgeGraph<Rectangle>, 
                     horizRect.height = hallwaySize
                     //first try connecting hallway from the top of the lower rectangle. this should handle up & left|right (T) connections
                     //later we'll handle "upside down" T connections by extending rect from bottom of higher rect.
-                    if(topRect==leftRect) {
+                    var topLeft = topRect == leftRect
+                    if(topLeft) {
                         horizRect.x = leftRect.right()
+                        horizRect.width = rightRect.midX() + hallwaySize / 2 - leftRect.right()
                         horizRect.width = rightRect.midX() + hallwaySize / 2 - leftRect.right()
                     }else{
                         horizRect.x = vertRect.x
                         horizRect.width = rightRect.x-vertRect.x
                     }
-
                     if(mainRoomRects.none{it.overlaps(horizRect)||it.overlaps(vertRect)}){
+                        if(topLeft){
+                            doors.add(Vector2(leftRect.right(), horizRect.midY()))
+                        }else{
+                            doors.add(Vector2(horizRect.right(), horizRect.midY()))
+                        }
                         doors.add(Vector2(vertRect.midX(),vertRect.y))
                         hallways.add(horizRect)
                         hallways.add(vertRect)
@@ -109,15 +115,18 @@ class HallwaySolver(val hallwaySize:Float, val mainRooms: EdgeGraph<Rectangle>, 
                         vertRect.y = bottomRect.midY()-hallwaySize/2
                         vertRect.height = topRect.y-vertRect.y
                         hallways.add(vertRect)
+                        doors.add(Vector2(vertRect.midX(),vertRect.top()))
 
                         horizRect.y = bottomRect.midY()-hallwaySize/2
                         horizRect.height = hallwaySize
                         if(bottomRect == rightRect){
                             horizRect.x = vertRect.x
                             horizRect.width = bottomRect.x-vertRect.x
+                            doors.add(Vector2(horizRect.right(),horizRect.midY()))
                         }else{
                             horizRect.x = bottomRect.right()
                             horizRect.width = vertRect.x - horizRect.x
+                            doors.add(Vector2(horizRect.x, horizRect.midY()))
                         }
                         hallways.add(horizRect)
                     }

@@ -7,9 +7,9 @@ import kotlin.math.abs
 class RectangleFactoryNormalDistributionImpl(private val positionFactory:VectorFactory,
                                              private val random: Random,
                                              private val averageRectDim:Float,
+                                             private val standardRectDimDeviation : Float,
                                              private val minRoomWidth:Float,
-                                             private val minRoomHeight:Float,
-                                             private val standardRectDimDeviation : Float): RectangleFactory{
+                                             private val minRoomHeight:Float): RectangleFactory{
 
     override fun new(numRects: Int): List<Rectangle> {
         val allRects = mutableListOf<Rectangle>()
