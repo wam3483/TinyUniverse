@@ -38,12 +38,19 @@ class DungeonGenerator(private val rectangleFactory:RectangleFactory,
         val edges = spanningTree.getEdges()
         val numEdgesToAdd = (edges.edges.size * .15f).toInt()
         var numAdded = 0
+        var iterations = 0
+        val maxIterations = 100
         while(numAdded<numEdgesToAdd){
+            //just in case the graph winds up fully connected
+            if(iterations>=maxIterations){
+                break;
+            }
             val edge = edges.edges[random.nextInt(edges.edges.size)]
             val n1children = connectedGraph.getChildren(edge.n1.value)!!
             val e2 = Edge(edge.n1, n1children[random.nextInt(n1children.size)])
             if (!edges.contains(e2)) {
                 numAdded++
+                iterations = 0
                 edges.add(e2)
             }
         }

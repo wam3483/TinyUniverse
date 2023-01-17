@@ -15,7 +15,7 @@ import java.util.*
 class DungeonGeneratorViewer : ApplicationAdapter {
     lateinit var batch: SpriteBatch
     var img: Texture? = null
-    var generator : DungeonGenerator// -3302475581927919216 8633074958013025850
+    lateinit var generator : DungeonGenerator// -3302475581927919216 8633074958013025850
     lateinit var shapeRenderer: ShapeRenderer
     var camera : OrthographicCamera? = null
     lateinit var font : BitmapFont
@@ -24,7 +24,11 @@ class DungeonGeneratorViewer : ApplicationAdapter {
 
 
     constructor(){
-        val random = newRandom(8633074958013025850)
+        init()
+    }
+
+    private fun init(){
+        val random = newRandom(null)//8633074958013025850)
         val positionFactory = VectorFactoryEllipseImpl(10f,10f, random)
         val rectFactory = RectangleFactoryNormalDistributionImpl(positionFactory, random,30f,10f,3f,3f)
         val rectSeparationDecorator = RectangleFactorySeparationDecoratorImpl(rectFactory)
@@ -48,7 +52,15 @@ class DungeonGeneratorViewer : ApplicationAdapter {
         font = BitmapFont()
     }
 
+    var timeAccumulatorSecs = 0f
+    var newDungeonDelaySecs = 10f
+
     override fun render() {
+        timeAccumulatorSecs += Gdx.graphics.deltaTime;
+        if(timeAccumulatorSecs>=newDungeonDelaySecs){
+            init()
+            timeAccumulatorSecs = 0f
+        }
         ScreenUtils.clear(0f, 0f, 0f, 1f)
         camera!!.update()
         shapeRenderer.setProjectionMatrix(camera!!.combined)
