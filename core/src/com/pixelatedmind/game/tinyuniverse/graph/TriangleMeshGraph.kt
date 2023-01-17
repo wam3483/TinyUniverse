@@ -1,16 +1,16 @@
-package com.pixelatedmind.game.tinyuniverse.generation
+package com.pixelatedmind.game.tinyuniverse.graph
 
 import java.util.*
 
-class TriangleIndexGraph<T>(val nodes:List<T>, val triangleEdges : ShortArray) {
+class TriangleMeshGraph<T>(val vertexValues:List<T>, val triangleMeshEdges : ShortArray) {
 
     fun getChildren(nodeValue: T) : List<Node<T>>?{
-        val valueIndex = nodes.indexOf(nodeValue)
+        val valueIndex = vertexValues.indexOf(nodeValue)
         if(valueIndex == -1){
             return null
         }
         val indicesOfValueInTriangle = mutableListOf<Int>()
-        triangleEdges.forEachIndexed{index,value->
+        triangleMeshEdges.forEachIndexed{ index, value->
             if(value==valueIndex.toShort()){
                 indicesOfValueInTriangle.add(index)
             }
@@ -25,17 +25,17 @@ class TriangleIndexGraph<T>(val nodes:List<T>, val triangleEdges : ShortArray) {
         val nodeIndex = index.toInt()
         repeat(3){
             if(triangleIndex!=nodeIndex){
-                children.add(Node(nodes[triangleEdges[triangleIndex].toInt()]))
+                children.add(Node(vertexValues[triangleMeshEdges[triangleIndex].toInt()]))
             }
             triangleIndex++
         }
     }
 
-    fun getSpanningTree():Node<T>{
+    fun getSpanningTree(): Node<T> {
         val stack = Stack<T>()
         val visited = mutableSetOf<T>()
-        stack.push(nodes[0])
-        val graph = Node(nodes[0])
+        stack.push(vertexValues[0])
+        val graph = Node(vertexValues[0])
         while(stack.isNotEmpty()){
             val nodeValue = stack.pop()
             visited.add(nodeValue)

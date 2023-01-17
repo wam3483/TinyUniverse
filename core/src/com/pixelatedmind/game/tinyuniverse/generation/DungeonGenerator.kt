@@ -6,15 +6,17 @@ import com.badlogic.gdx.math.Vector2
 import com.pixelatedmind.game.tinyuniverse.flocking.Flock
 import com.pixelatedmind.game.tinyuniverse.flocking.GenericBoidImpl
 import com.pixelatedmind.game.tinyuniverse.flocking.SeparationSteeringRuleImpl
+import com.pixelatedmind.game.tinyuniverse.graph.Edge
+import com.pixelatedmind.game.tinyuniverse.graph.TriangleMeshGraph
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
 
-class WorldCellGenerator {
+class DungeonGenerator {
     private val random : Random
-    val boids : MutableList<GenericBoidImpl<Rectangle>>
+    private val boids : MutableList<GenericBoidImpl<Rectangle>>
     private val flock : Flock
     private val triangulator : DelaunayTriangulator
 
@@ -31,6 +33,10 @@ class WorldCellGenerator {
         val rule = SeparationSteeringRuleImpl()
         flock = Flock(boids, listOf(rule))
         println("Dungeon seed:"+seedInput)
+    }
+
+    fun getAllRooms() : List<Rectangle>{
+        return boids.map{it.value}
     }
 
     private fun generateBoids(roomsToGenerate:Int, meanRoomDimension:Float, standardDeviation:Float, minRoomDim:Vector2){
@@ -59,7 +65,7 @@ class WorldCellGenerator {
         return mean + random.nextGaussian().toFloat() * std
     }
 
-    fun getRooms() : List<Rectangle> {
+    fun getMainRooms() : List<Rectangle> {
         val avgWidth = boids.map{it.value.width}.sum()/boids.size * 1.25F
         val avgHeight = boids.map{it.value.height}.sum()/boids.size * 1.25F
         val rooms = boids.filter{
@@ -96,7 +102,7 @@ class WorldCellGenerator {
         return true
     }
 
-    fun newDelunuaryGraphFrom(roomRects : List<Rectangle>):TriangleIndexGraph<Rectangle>{
+    fun newDelunuaryGraphFrom(roomRects : List<Rectangle>): TriangleMeshGraph<Rectangle> {
         val graphPoints = shortArrayFrom(roomRects)
         val triangleGraphIndices = triangulator.computeTriangles(graphPoints,false)
         val ary = ShortArray(triangleGraphIndices.size)
@@ -105,92 +111,30 @@ class WorldCellGenerator {
             ary[index] = triangleGraphIndices.get(index)
             index++
         }
-        val delaunayGraph = TriangleIndexGraph(roomRects.map{it}, ary)
+        val delaunayGraph = TriangleMeshGraph(roomRects.map{it}, ary)
         return delaunayGraph
     }
 
-    fun newMainRoomGraph(roomRects : List<Rectangle>):List<Edge<Rectangle>>{
+    fun newMainRoomGraph(roomRects : List<Rectangle>, subRooms:List<Rectangle>):RegionModel{
         val connectedGraph = newDelunuaryGraphFrom(roomRects)
         val spanningTree = connectedGraph.getSpanningTree()
-        val edges = spanningTree.getEdges().toMutableList()
-        val numEdgesToAdd = (edges.size * .15f).toInt()
+        val edges = spanningTree.getEdges()
+        val numEdgesToAdd = (edges.edges.size * .15f).toInt()
         var numAdded = 0
         while(numAdded<numEdgesToAdd){
-            val edge = edges[random.nextInt(edges.size)]
+            val edge = edges.edges[random.nextInt(edges.edges.size)]
             val n1children = connectedGraph.getChildren(edge.n1.value)!!
             val e2 = Edge(edge.n1, n1children[random.nextInt(n1children.size)])
-            if (edges.none { it.equals(e2) }) {
+            if (!edges.contains(e2)) {
                 numAdded++
                 edges.add(e2)
             }
         }
-        val hallways = findHallways(edges,5f)
-        return edges
-    }
-    fun Rectangle.right() : Float{
-        return x+width
-    }
-    fun Rectangle.bottom() : Float{
-        return y+height
-    }
-    fun Rectangle.xAxisOverlap(other:Rectangle, output: Vector2) : Vector2?{
-        if(x>other.right() || right()< other.x){
-            return null
-        }
-        return output.set(
-            x.coerceAtLeast(other.x),
-            right().coerceAtMost(other.right())
-        )
-    }
-    fun Rectangle.yAxisOverlap(other:Rectangle, output:Vector2):Vector2?{
-        if(y>other.bottom() || y<other.y){
-            return null
-        }
-        return output.set(
-            y.coerceAtLeast(other.y),
-            bottom().coerceAtMost(other.bottom())
-        )
-    }
 
-    private fun findHallways(edges:List<Edge<Rectangle>>, hallwaySize:Float):List<Rectangle>{
-        val v1 = Vector2()
-        val v2 = Vector2()
-        val output = mutableListOf<Rectangle>()
-        edges.forEach {
-            val xOverlap = it.n1.value.xAxisOverlap(it.n2.value, v1)
-            val yOverlap = it.n1.value.yAxisOverlap(it.n2.value, v2)
-            //both should never be non-null at the same time
-            //
-            //if both are null OR
-            //overlapped on X axis but overlap was too small OR
-            //overlapped on y axis but overlap was too small
-            //  then we do L shape
-            if((xOverlap==null && yOverlap==null) ||
-                (xOverlap!=null && (xOverlap.y-xOverlap.x)>hallwaySize) ||
-                (yOverlap!=null && (yOverlap.y-yOverlap.x)>hallwaySize)){
-                //L shape
+        val hallwaySolver = HallwaySolver(5f, edges, getAllRooms().filter{!roomRects.contains(it)})
+        val hallways = hallwaySolver.getHallways()
 
-            }
-            else if(xOverlap!=null && xOverlap.y-xOverlap.x>hallwaySize){
-                val left = xOverlap.x+(xOverlap.y-xOverlap.x)/2-hallwaySize/2
-                val rect = Rectangle()
-                rect.x = left
-                rect.width = hallwaySize
-                if(it.n1.value.y<it.n2.value.y){
-                    rect.y = it.n1.value.bottom()
-                    rect.height = it.n2.value.y-it.n1.value.bottom()
-                }
-                else{
-                    rect.y = it.n2.value.bottom()
-                    rect.height = it.n1.value.y - it.n2.value.bottom()
-                }
-                output.add(rect)
-            }
-            else if(yOverlap!=null && yOverlap.y-yOverlap.y>hallwaySize){
-
-            }
-        }
-        return output
+        return RegionModel(edges, hallwaySolver.getSubrooms(hallways), connectedGraph, hallways.hallways, hallways.doors)
     }
 
     fun shortArrayFrom(nonOverlappingRects : List<Rectangle>):FloatArray {

@@ -1,7 +1,7 @@
-package com.pixelatedmind.game.tinyuniverse.generation
+package com.pixelatedmind.game.tinyuniverse.graph
 
-class Edge<T>(val n1 :Node<T>, val n2:Node<T>) {
-    fun hasNode(node:Node<T>):Boolean{
+class Edge<T>(val n1 : Node<T>, val n2: Node<T>) {
+    fun hasNode(node: Node<T>):Boolean{
         return n1 == node || n2 == node
     }
     override fun equals(other: Any?): Boolean {

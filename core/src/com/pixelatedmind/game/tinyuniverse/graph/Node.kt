@@ -1,4 +1,4 @@
-package com.pixelatedmind.game.tinyuniverse.generation
+package com.pixelatedmind.game.tinyuniverse.graph
 
 import java.util.*
 
@@ -11,7 +11,7 @@ class Node<T>(val value : T) {
         return false
     }
 
-    fun getEdges() : List<Edge<T>> {
+    fun getEdges() : EdgeGraph<T> {
         val stack = Stack<Node<T>>()
         val edges = mutableListOf<Edge<T>>()
         stack.add(this)
@@ -28,10 +28,10 @@ class Node<T>(val value : T) {
                 }
             }
         }
-        return edges
+        return EdgeGraph(edges)
     }
 
-    fun getNodeFor(value:T):Node<T>?{
+    fun getNodeFor(value:T): Node<T>?{
         return getNodeForRecursive(value, mutableSetOf<T>())
     }
     private fun getNodeForRecursive(value : T, visited:MutableSet<T>) : Node<T>?{
