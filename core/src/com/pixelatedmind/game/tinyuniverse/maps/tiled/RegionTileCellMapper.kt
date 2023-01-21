@@ -1,16 +1,11 @@
 package com.pixelatedmind.game.tinyuniverse.maps.tiled
 
+import com.badlogic.gdx.maps.tiled.TiledMapTile
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
-import com.badlogic.gdx.math.Rectangle
-import com.pixelatedmind.game.tinyuniverse.extensions.rectangle.right
-import com.pixelatedmind.game.tinyuniverse.extensions.rectangle.top
-import com.pixelatedmind.game.tinyuniverse.generation.RegionModel
 
-class DungeonTileMapConverter(val regionModel: RegionModel) {
-    private val dungeonRects = mutableListOf<Rectangle>()
+class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile>) {
     private val autotileBitflagMap = mutableMapOf<Int,Int>()
     init{
-        dungeonRects.addAll(regionModel.mainRoomGraph.getAllValues().union(regionModel.hallways).union(regionModel.subrooms))
         autotileBitflagMap.putAll(mapOf<Int,Int>(
                 2 to 1,
                 8 to 2,
@@ -61,13 +56,7 @@ class DungeonTileMapConverter(val regionModel: RegionModel) {
                 0 to 47 ))
     }
 
-    companion object{
-        fun autoTileFrom12Tile(){
-
-        }
-    }
-
-    private fun getAutotileBitmap(bounds:Rectangle, x:Int, y:Int) : Int{
+    private fun getAutotileBitflag(x:Int, y:Int) : Int{
         var bitflag = 0
         var bitIndex = 0
         for(dy in 1 downTo -1){
@@ -76,7 +65,7 @@ class DungeonTileMapConverter(val regionModel: RegionModel) {
                 val xIndex = x + dx
                 //ignore center tile
                 if(dy!=0 || dx!=0){
-                    var bitValue = dungeonRects.any{it.contains(xIndex.toFloat(),yIndex.toFloat())}
+                    var bitValue = bitmap.getValue(xIndex,yIndex)
                     if(bitValue){
                         bitflag = bitflag or (1 shl bitIndex)
                     }
@@ -87,38 +76,11 @@ class DungeonTileMapConverter(val regionModel: RegionModel) {
         return bitflag
     }
 
-    fun convertToTileLayer(){
-        val bounds = calculateBounds()
-        //TODO tilewidth and tileHeight should come from a tileset or sprite array, not hardcoded
-        val tileLayer = TiledMapTileLayer(bounds.width.toInt(), bounds.height.toInt(),32,32)
-        var y=0
-        while(y<bounds.height){
-            var x = 0
-            while(x<bounds.width){
-                getAutotileBitmap(bounds,x,y)
-                x++
-            }
-            ++y
-        }
-    }
-
-    private fun calculateBounds():Rectangle{
-        var minX = Float.MAX_VALUE
-        var minY = Float.MAX_VALUE
-        var maxX = Float.MIN_VALUE
-        var maxY = Float.MIN_VALUE
-        regionModel.mainRoomGraph.getAllValues().union(regionModel.hallways).union(regionModel.subrooms)
-                .forEach{
-            minX = Math.min(minX, it.x)
-            maxX = Math.max(maxX, it.right())
-            minY = Math.min(minY, it.y)
-            maxY = Math.max(maxY, it.top())
-        }
-        return Rectangle(minX,minY,maxX-minX,maxY-minY)
-    }
-
-    fun resolveCell(x:Float, y:Float) : TiledMapTileLayer.Cell{
+    fun resolveCell(x:Int, y:Int) : TiledMapTileLayer.Cell{
+        val bitflag = getAutotileBitflag(x,y)
+        val tile = this.autoTile[bitflag]
         val cell = TiledMapTileLayer.Cell()
+        cell.tile = tile
         return cell
     }
 }
