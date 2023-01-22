@@ -23,6 +23,9 @@ class IntAryBitmap : Bitmap{
     }
 
     override fun getValue(x: Int, y: Int): Boolean {
+        if(x<0 || y<0 || y>=ary[0].size || x>=ary.size){
+            return false
+        }
         return isTrueValue(ary[x][y])
     }
 

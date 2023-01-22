@@ -2,6 +2,7 @@ package com.pixelatedmind.game.tinyuniverse;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.pixelatedmind.game.tinyuniverse.screen.AutoTileTester;
 import com.pixelatedmind.game.tinyuniverse.util.AutoTilePacker;
 import com.pixelatedmind.game.tinyuniverse.util.AutoTilePacker2;
 
@@ -12,7 +13,10 @@ public class DesktopLauncher {
 		config.setForegroundFPS(60);
 		config.setWindowedMode(1600,768);
 		config.setTitle("TinyUniverse");
-		new Lwjgl3Application(new AutoTilePacker(),//new DungeonGeneratorViewer(),
+		new Lwjgl3Application(
+				new AutoTileTester(),
+				//new AutoTilePacker(),
+				//new DungeonGeneratorViewer(),
 				config);
 	}
 }

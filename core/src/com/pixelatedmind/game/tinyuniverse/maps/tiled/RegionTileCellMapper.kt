@@ -13,7 +13,7 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
                 11 to 4,
                 16 to 5,
                 18 to 6,
-                22 to 7,
+                22 to 34,
                 24 to 8,
                 26 to 9,
                 27 to 10,
@@ -39,7 +39,7 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
                 122 to 30,
                 123 to 31,
                 126 to 32,
-                127 to 33,
+                127 to 0,
                 208 to 34,
                 210 to 35,
                 214 to 36,
@@ -59,7 +59,7 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
     private fun getAutotileBitflag(x:Int, y:Int) : Int{
         var bitflag = 0
         var bitIndex = 0
-        for(dy in 1 downTo -1){
+        for(dy in -1 .. 1){
             val yIndex = y + dy
             for(dx in -1..1){
                 val xIndex = x + dx
@@ -76,9 +76,10 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
         return bitflag
     }
 
-    fun resolveCell(x:Int, y:Int) : TiledMapTileLayer.Cell{
+    fun resolveCell(x:Int, y:Int) : TiledMapTileLayer.Cell?{
         val bitflag = getAutotileBitflag(x,y)
-        val tile = this.autoTile[bitflag]
+        val tileIndex = autotileBitflagMap[bitflag] ?: return null
+        val tile = this.autoTile[tileIndex]
         val cell = TiledMapTileLayer.Cell()
         cell.tile = tile
         return cell

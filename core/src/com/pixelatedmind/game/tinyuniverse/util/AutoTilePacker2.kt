@@ -392,7 +392,7 @@ class AutoTilePacker2 {
         draw(1,0,1,1,1,1)
     }
     fun tile46(){
-        drawWholeTile(0, 1, 0,0)
+        drawWholeTile(1, 0, 0,0)
 //        batch.draw(wholeTiles[0][1],origin.x,origin.y)
     }
     fun tile47(){
