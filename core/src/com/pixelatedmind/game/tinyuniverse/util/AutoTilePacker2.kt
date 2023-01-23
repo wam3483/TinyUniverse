@@ -1,6 +1,7 @@
 package com.pixelatedmind.game.tinyuniverse.util
 
 import com.badlogic.gdx.math.Rectangle
+import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import java.io.File
@@ -75,6 +76,8 @@ class AutoTilePacker2 {
         val worldY = y*tileSize
         g.translate(worldX,worldY)
         action()
+        g.color = Color.RED
+        g.drawString(x.toString(), tileSize/2,tileSize/2)
         g.translate(-worldX,-worldY)
     }
 

@@ -2,6 +2,7 @@ package com.pixelatedmind.game.tinyuniverse.maps.tiled
 
 import com.badlogic.gdx.maps.tiled.TiledMapTile
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
+import com.badlogic.gdx.math.Vector2
 
 class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile>) {
     private val autotileBitflagMap = mutableMapOf<Int,Int>()
@@ -57,8 +58,20 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
     }
 
     private fun getAutotileBitflag(x:Int, y:Int) : Int{
+        if(x==1 && y==0){
+            println("debu")
+        }
+
         var bitflag = 0
         var bitIndex = 0
+        val cornerNeighborMap = mapOf(
+                Vector2(-1f,-1f) to listOf(Vector2(0f,-1f),Vector2(-1f,0f)),
+                Vector2(1f,-1f) to listOf(Vector2(0f,-1f),Vector2(1f,0f)),
+                Vector2(-1f,1f) to listOf(Vector2(-1f,0f),Vector2(0f,1f)),
+                Vector2(1f,1f) to listOf(Vector2(0f,1f),Vector2(1f,0f))
+        )
+        val temp = Vector2()
+
         for(dy in -1 .. 1){
             val yIndex = y + dy
             for(dx in -1..1){
@@ -66,12 +79,28 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
                 //ignore center tile
                 if(dy!=0 || dx!=0){
                     var bitValue = bitmap.getValue(xIndex,yIndex)
+                    if(bitValue) {
+                        temp.set(dx.toFloat(),dy.toFloat())
+                        val cornerOffset = cornerNeighborMap[temp]
+                        if (cornerOffset != null) {
+                            bitValue = bitValue && bitmap.getValue(
+                                    x + cornerOffset[0].x.toInt(),
+                                    y + cornerOffset[0].y.toInt())
+                            bitValue = bitValue && bitmap.getValue(
+                                    x + cornerOffset[1].x.toInt(),
+                                    y + cornerOffset[1].y.toInt())
+                        }
+                    }
                     if(bitValue){
                         bitflag = bitflag or (1 shl bitIndex)
                     }
                     ++bitIndex
                 }
             }
+        }
+
+        if(x==1 && y==0){
+            println("debu")
         }
         return bitflag
     }

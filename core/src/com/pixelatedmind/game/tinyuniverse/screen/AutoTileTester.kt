@@ -25,13 +25,14 @@ class AutoTileTester : ApplicationAdapter() {
     private lateinit var tiledMap : TiledMap
     lateinit var camera : OrthographicCamera
     lateinit var tiledMapRenderer : OrthogonalTiledMapRenderer
+    lateinit var tiles : Array<TiledMapTile>
     init{
 
     }
 
     fun createAutoTile(texture : Texture, startX:Int, startY:Int,width:Int, height:Int, tileWidth:Int, tileHeight:Int) : List<TiledMapTile> {
-
-        AutoTilePacker2().load(File("C:\\Users\\wam34\\IdeaProjects\\TinyUniverse\\assets\\waterGrassAutoTile.png"),32)
+        AutoTilePacker2().load(
+                File("waterGrassAutoTile.png"),32)
 
         val rows = height / tileHeight
         val columns = width / tileWidth
@@ -60,7 +61,8 @@ class AutoTileTester : ApplicationAdapter() {
 
         bitmap = IntAryBitmap(ary, 1)
         val texture = Texture("test.png")
-        val mapper = RegionTileCellMapper(bitmap, createAutoTile(texture,0,0,texture.width,texture.height,32,32))
+        val tiles = createAutoTile(texture,0,0,texture.width,texture.height,32,32)
+        val mapper = RegionTileCellMapper(bitmap, tiles)
         var x = 0
         val tileLayer = TiledMapTileLayer(columns, rows, 32, 32)
         while(x<columns){
@@ -98,5 +100,6 @@ class AutoTileTester : ApplicationAdapter() {
         camera.update()
         tiledMapRenderer.setView(camera)
         tiledMapRenderer.render()
+
     }
 }
