@@ -7,13 +7,17 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-class AutoTilePacker2 {
+//https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
+//followed the above tutorial to create an expanded 49 images from a 12 tile autotile image.
+//this is necessary because we're autogenerating maps. makes creating more complex tiled maps simpler.
+class AutoTileExpanderUtil {
 
     lateinit var autoTileImg : BufferedImage
     var tileSize = 32
     lateinit var g : Graphics2D
+
     fun load(file: File,tileSize:Int) {
-        val resultImg = BufferedImage(48*tileSize,tileSize,BufferedImage.TYPE_4BYTE_ABGR)
+        val resultImg = BufferedImage((48+1)*tileSize,tileSize,BufferedImage.TYPE_4BYTE_ABGR)
         g = resultImg.createGraphics()
         autoTileImg = ImageIO.read(file)
 
@@ -68,6 +72,7 @@ class AutoTilePacker2 {
         prepDrawThen(45,0) {tile45() }
         prepDrawThen(46,0) {tile46() }
         prepDrawThen(47,0) {tile47() }
+        prepDrawThen(48,0) {tile48() }
         ImageIO.write(resultImg, "png",File("test.png"))
     }
 
@@ -77,7 +82,7 @@ class AutoTilePacker2 {
         g.translate(worldX,worldY)
         action()
         g.color = Color.RED
-        g.drawString(x.toString(), tileSize/2,tileSize/2)
+//        g.drawString(x.toString(), tileSize/2,tileSize/2)
         g.translate(-worldX,-worldY)
     }
 
@@ -274,10 +279,10 @@ class AutoTilePacker2 {
     }
 
     fun tile26(){
-        draw(0,0,1,1,0,0)
-        draw(1,0,1,0,1,0)
+        draw(1,3,0,1,0,0)
+        draw(2,0,0,1,1,0)
         draw(1,0,0,1,0,1)
-        draw(0,0,0,0,1,1)
+        draw(0,2,0,1,1,1)
     }
     fun tile27(){
         draw(1,0,0,0,0,0)
@@ -358,21 +363,24 @@ class AutoTilePacker2 {
     fun tile39(){
         tile23()
     }
+
     fun tile40(){
         draw(0,0,1,1,0,0)
         draw(1,0,1,0,1,0)
         draw(0,0,1,0,0,1)
         draw(1,0,1,1,1,1)
     }
+
     fun tile41(){
         draw(1,0,0,0,0,0)
         draw(1,0,1,0,1,0)
+        draw(1,0,1,0,1,1)
         draw(0,0,1,0,0,1)
-        draw(1,0,1,1,1,1)
     }
+
     fun tile42(){
-        draw(2,3,0,1,0,0)
-        draw(2,3,1,1,1,0)
+        draw(1,3,0,1,0,0)
+        draw(1,3,1,1,1,0)
         draw(1,0,0,1,0,1)
         draw(1,0,1,1,1,1)
     }
@@ -396,12 +404,11 @@ class AutoTilePacker2 {
     }
     fun tile46(){
         drawWholeTile(1, 0, 0,0)
-//        batch.draw(wholeTiles[0][1],origin.x,origin.y)
     }
     fun tile47(){
-        draw(2,0,1,1,0,0)
-        draw(2,0,0,1,1,0)
-        draw(2,0,1,0,0,1)
-        draw(2,0,0,0,1,1)
+        drawWholeTile(1, 0, 0, 0)
+    }
+    fun tile48(){
+        drawWholeTile(1, 2, 0, 0)
     }
 }

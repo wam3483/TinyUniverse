@@ -1,5 +1,7 @@
 package com.pixelatedmind.game.tinyuniverse.flocking
 
+import com.pixelatedmind.game.tinyuniverse.flocking.rule.Rule
+
 class Flock(val boids: List<Boid>, val rules : List<Rule>) {
     val unitsPerSec = 150
     fun update(deltaSecs : Float) {

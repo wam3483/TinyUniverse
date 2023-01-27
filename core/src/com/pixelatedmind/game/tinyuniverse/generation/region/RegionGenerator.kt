@@ -1,15 +1,16 @@
-package com.pixelatedmind.game.tinyuniverse.generation
+package com.pixelatedmind.game.tinyuniverse.generation.region
 
-import com.badlogic.gdx.math.DelaunayTriangulator
 import com.badlogic.gdx.math.Rectangle
+import com.pixelatedmind.game.tinyuniverse.generation.RectangleFactory
 import com.pixelatedmind.game.tinyuniverse.graph.Edge
+import com.pixelatedmind.game.tinyuniverse.graph.GenericVector2
 import com.pixelatedmind.game.tinyuniverse.graph.TriangleMeshGraph
 import java.util.*
 
 
-class DungeonGenerator(private val rectangleFactory:RectangleFactory,
-                       private val roomsToGenerate:Int,
-                       private val random:Random) {
+class RegionGenerator(private val rectangleFactory: RectangleFactory,
+                      private val roomsToGenerate:Int,
+                      private val random:Random) {
 
     fun getMainRooms(allRooms:List<Rectangle>) : List<Rectangle> {
         val avgWidth = allRooms.map{it.width}.sum()/allRooms.size * 1.25F
@@ -26,11 +27,11 @@ class DungeonGenerator(private val rectangleFactory:RectangleFactory,
 
     fun newDelunuaryGraphFrom(roomRects : List<Rectangle>): TriangleMeshGraph<Rectangle> {
         val graphPoints = positionArrayFrom(roomRects)
-        val delaunayGraph = TriangleMeshGraph(roomRects, graphPoints)
+        val delaunayGraph = TriangleMeshGraph(graphPoints)
         return delaunayGraph
     }
 
-    fun newMainRoomGraph():RegionModel{
+    fun newMainRoomGraph(): RegionModel {
         val allRooms = this.rectangleFactory.new(roomsToGenerate)
         val mainRooms = this.getMainRooms(allRooms)
         val connectedGraph = newDelunuaryGraphFrom(mainRooms)
@@ -61,13 +62,7 @@ class DungeonGenerator(private val rectangleFactory:RectangleFactory,
         return RegionModel(allRooms, hallwaySolver.getSubrooms(hallways), edges,  connectedGraph, hallways.hallways, hallways.doors)
     }
 
-    fun positionArrayFrom(nonOverlappingRects : List<Rectangle>):FloatArray {
-        val ary = FloatArray(nonOverlappingRects.size*2)
-        nonOverlappingRects.forEachIndexed{index,rect->
-            val i2 = index*2
-            ary[i2] = rect.x
-            ary[i2+1] = rect.y
-        }
-        return ary
+    fun positionArrayFrom(nonOverlappingRects : List<Rectangle>):List<GenericVector2<Rectangle>> {
+        return nonOverlappingRects.map{GenericVector2(it, it.x,it.y)}
     }
 }

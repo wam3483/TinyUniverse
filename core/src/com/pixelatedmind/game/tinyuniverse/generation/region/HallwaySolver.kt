@@ -1,4 +1,4 @@
-package com.pixelatedmind.game.tinyuniverse.generation
+package com.pixelatedmind.game.tinyuniverse.generation.region
 
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
@@ -38,13 +38,13 @@ class HallwaySolver(val hallwaySize:Float, val mainRooms: EdgeGraph<Rectangle>, 
         return rect
     }
 
-    fun getSubrooms(hallways:HallwaysAndDoors):List<Rectangle>{
+    fun getSubrooms(hallways: HallwaysAndDoors):List<Rectangle>{
         return potentialSubrooms.filter{subroom->
             hallways.hallways.any{h->h.overlaps(subroom)}
         }
     }
 
-    fun getHallways() : HallwaysAndDoors{
+    fun getHallways() : HallwaysAndDoors {
         val mainRoomRects = mainRooms.getAllValues()
         val hallways = mutableListOf<Rectangle>()
         val doors = mutableListOf<Vector2>()

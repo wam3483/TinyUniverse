@@ -2,7 +2,7 @@ package com.pixelatedmind.game.tinyuniverse.screen
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.Camera
+import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
@@ -10,28 +10,27 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TiledMapTile
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
-import com.badlogic.gdx.maps.tiled.TmxMapLoader
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile
+import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
+import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
 import com.pixelatedmind.game.tinyuniverse.maps.tiled.IntAryBitmap
 import com.pixelatedmind.game.tinyuniverse.maps.tiled.RegionTileCellMapper
-import com.pixelatedmind.game.tinyuniverse.util.AutoTilePacker2
+import com.pixelatedmind.game.tinyuniverse.util.AutoTileExpanderUtil
 import java.io.File
-import java.util.*
 
 
-class AutoTileTester : ApplicationAdapter() {
+class AutoTileMapperTester : ApplicationAdapter() {
     private lateinit var bitmap : IntAryBitmap
     private lateinit var tiledMap : TiledMap
     lateinit var camera : OrthographicCamera
     lateinit var tiledMapRenderer : OrthogonalTiledMapRenderer
     lateinit var tiles : Array<TiledMapTile>
     init{
-
     }
 
     fun createAutoTile(texture : Texture, startX:Int, startY:Int,width:Int, height:Int, tileWidth:Int, tileHeight:Int) : List<TiledMapTile> {
-        AutoTilePacker2().load(
+        AutoTileExpanderUtil().load(
                 File("waterGrassAutoTile.png"),32)
 
         val rows = height / tileHeight
@@ -52,12 +51,17 @@ class AutoTileTester : ApplicationAdapter() {
         return tiles
     }
 
+    fun drawPixel(ary:Array<IntArray>,x:Int, y:Int, value:Int){
+        ary[x][y] = value
+    }
+
     override fun create() {
         val rows = 10
         val columns = 10
 
         val ary = Array(rows){IntArray(columns){1} }
-
+        drawPixel(ary,3,3,0)
+        drawPixel(ary,4,4,0)
 
         bitmap = IntAryBitmap(ary, 1)
         val texture = Texture("test.png")
@@ -68,9 +72,6 @@ class AutoTileTester : ApplicationAdapter() {
         while(x<columns){
             var y = 0
             while(y<rows){
-                if(x==2 && y == 0){
-                    println("boop")
-                }
                 val cell = mapper.resolveCell(x, y)
                 tileLayer.setCell(x, y, cell)
                 ++y
@@ -88,15 +89,17 @@ class AutoTileTester : ApplicationAdapter() {
         camera.setToOrtho(false, w, h)
         camera.update()
         tiledMapRenderer = OrthogonalTiledMapRenderer(tiledMap)
-        //Gdx.input.setInputProcessor(this)
+
+        val zoomInput = ScrollZoomInputProcessor(camera!!)
+        val moveInput = KeyboardCameraMoveProcessor(camera!!)
+        val multiplex = InputMultiplexer(zoomInput, moveInput)
+        Gdx.input.setInputProcessor(multiplex)
     }
 
     override fun render() {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        camera.position.x = -50f
-        camera.position.y = -50f
         camera.update()
         tiledMapRenderer.setView(camera)
         tiledMapRenderer.render()

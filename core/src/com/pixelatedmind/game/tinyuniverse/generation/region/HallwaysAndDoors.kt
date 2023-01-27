@@ -1,4 +1,4 @@
-package com.pixelatedmind.game.tinyuniverse.generation
+package com.pixelatedmind.game.tinyuniverse.generation.region
 
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2

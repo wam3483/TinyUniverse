@@ -11,8 +11,9 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
                 2 to 1,
                 8 to 2,
                 10 to 3,
-                11 to 4,
+                11 to 26,
                 16 to 5,
+                104 to 26,
                 18 to 6,
                 22 to 34,
                 24 to 8,
@@ -33,14 +34,15 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
                 91 to 23,
                 94 to 24,
                 95 to 25,
-                104 to 26,
+                11 to 4,
                 106 to 27,
                 107 to 28,
                 120 to 29,
                 122 to 30,
                 123 to 31,
                 126 to 32,
-                127 to 0,
+                127 to 33,
+                22 to 7,
                 208 to 34,
                 210 to 35,
                 214 to 36,
@@ -58,37 +60,32 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
     }
 
     private fun getAutotileBitflag(x:Int, y:Int) : Int{
-        if(x==1 && y==0){
-            println("debu")
-        }
-
         var bitflag = 0
         var bitIndex = 0
-        val cornerNeighborMap = mapOf(
+        val cornerOffsets = mapOf(
                 Vector2(-1f,-1f) to listOf(Vector2(0f,-1f),Vector2(-1f,0f)),
                 Vector2(1f,-1f) to listOf(Vector2(0f,-1f),Vector2(1f,0f)),
-                Vector2(-1f,1f) to listOf(Vector2(-1f,0f),Vector2(0f,1f)),
+                Vector2(-1f,1f) to listOf(Vector2(0f,1f),Vector2(-1f,0f)),
                 Vector2(1f,1f) to listOf(Vector2(0f,1f),Vector2(1f,0f))
         )
         val temp = Vector2()
-
-        for(dy in -1 .. 1){
+        for(dy in 1 downTo -1)
+//        for(dy in -1 .. 1)
+        {
             val yIndex = y + dy
-            for(dx in -1..1){
+            for(dx in -1 .. 1){
                 val xIndex = x + dx
                 //ignore center tile
                 if(dy!=0 || dx!=0){
                     var bitValue = bitmap.getValue(xIndex,yIndex)
+
                     if(bitValue) {
                         temp.set(dx.toFloat(),dy.toFloat())
-                        val cornerOffset = cornerNeighborMap[temp]
+                        val cornerOffset = cornerOffsets[temp]
                         if (cornerOffset != null) {
-                            bitValue = bitValue && bitmap.getValue(
-                                    x + cornerOffset[0].x.toInt(),
-                                    y + cornerOffset[0].y.toInt())
-                            bitValue = bitValue && bitmap.getValue(
-                                    x + cornerOffset[1].x.toInt(),
-                                    y + cornerOffset[1].y.toInt())
+                            val check1 = bitmap.getValue(x+cornerOffset[0].x.toInt(), y+cornerOffset[0].y.toInt())
+                            val check2 = bitmap.getValue(x+cornerOffset[1].x.toInt(), y+cornerOffset[1].y.toInt())
+                            bitValue = check1 && check2
                         }
                     }
                     if(bitValue){
@@ -98,16 +95,17 @@ class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile
                 }
             }
         }
-
-        if(x==1 && y==0){
-            println("debu")
-        }
         return bitflag
     }
 
     fun resolveCell(x:Int, y:Int) : TiledMapTileLayer.Cell?{
-        val bitflag = getAutotileBitflag(x,y)
-        val tileIndex = autotileBitflagMap[bitflag] ?: return null
+        var tileIndex =0
+        if(!bitmap.getValue(x,y)){
+            tileIndex = 48
+        }else {
+            val bitflag = getAutotileBitflag(x, y)
+            tileIndex = autotileBitflagMap[bitflag] ?: return null
+        }
         val tile = this.autoTile[tileIndex]
         val cell = TiledMapTileLayer.Cell()
         cell.tile = tile

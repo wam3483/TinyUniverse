@@ -1,7 +1,8 @@
-package com.pixelatedmind.game.tinyuniverse
+package com.pixelatedmind.game.tinyuniverse.screen
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
@@ -10,12 +11,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.generation.*
+import com.pixelatedmind.game.tinyuniverse.generation.region.RegionGenerator
+import com.pixelatedmind.game.tinyuniverse.generation.region.RegionModel
+import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
+import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
 import java.util.*
 
-class DungeonGeneratorViewer : ApplicationAdapter {
+class RegionGeneratorRawModelViewer : ApplicationAdapter {
     lateinit var batch: SpriteBatch
     var img: Texture? = null
-    lateinit var generator : DungeonGenerator// -3302475581927919216 8633074958013025850
+    lateinit var generator : RegionGenerator// -3302475581927919216 8633074958013025850
     lateinit var shapeRenderer: ShapeRenderer
     var camera : OrthographicCamera? = null
     lateinit var font : BitmapFont
@@ -32,7 +37,7 @@ class DungeonGeneratorViewer : ApplicationAdapter {
         val positionFactory = VectorFactoryEllipseImpl(10f,10f, random)
         val rectFactory = RectangleFactoryNormalDistributionImpl(positionFactory, random,30f,10f,3f,3f)
         val rectSeparationDecorator = RectangleFactorySeparationDecoratorImpl(rectFactory)
-        generator = DungeonGenerator(rectSeparationDecorator, 50, random)
+        generator = RegionGenerator(rectSeparationDecorator, 50, random)
         regionModel = generator.newMainRoomGraph()
     }
 
@@ -50,6 +55,10 @@ class DungeonGeneratorViewer : ApplicationAdapter {
         img = Texture("badlogic.jpg")
         camera!!.zoom = 1F
         font = BitmapFont()
+        val zoomInput = ScrollZoomInputProcessor(camera!!)
+        val moveInput = KeyboardCameraMoveProcessor(camera!!)
+        val multiplex = InputMultiplexer(zoomInput, moveInput)
+        Gdx.input.setInputProcessor(multiplex)
     }
 
     var timeAccumulatorSecs = 0f

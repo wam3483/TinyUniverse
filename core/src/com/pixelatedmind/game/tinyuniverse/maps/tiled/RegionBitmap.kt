@@ -3,7 +3,7 @@ package com.pixelatedmind.game.tinyuniverse.maps.tiled
 import com.badlogic.gdx.math.Rectangle
 import com.pixelatedmind.game.tinyuniverse.extensions.rectangle.right
 import com.pixelatedmind.game.tinyuniverse.extensions.rectangle.top
-import com.pixelatedmind.game.tinyuniverse.generation.RegionModel
+import com.pixelatedmind.game.tinyuniverse.generation.region.RegionModel
 
 class RegionBitmap(val regionModel : RegionModel) : Bitmap {
     private val regionRects = mutableListOf<Rectangle>()

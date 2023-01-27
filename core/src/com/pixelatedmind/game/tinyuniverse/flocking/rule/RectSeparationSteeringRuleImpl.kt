@@ -1,8 +1,10 @@
-package com.pixelatedmind.game.tinyuniverse.flocking
+package com.pixelatedmind.game.tinyuniverse.flocking.rule
 
 import com.badlogic.gdx.math.Rectangle
+import com.pixelatedmind.game.tinyuniverse.flocking.Boid
+import com.pixelatedmind.game.tinyuniverse.flocking.GenericBoidImpl
 
-class SeparationSteeringRuleImpl : Rule {
+class RectSeparationSteeringRuleImpl : Rule {
     override fun updateBoid(boid: Boid, flock: List<Boid>) {
         val b1 = boid as GenericBoidImpl<Rectangle>
         val intersectingRects = flock.filter{

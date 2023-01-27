@@ -3,7 +3,7 @@ package com.pixelatedmind.game.tinyuniverse.generation
 import com.badlogic.gdx.math.Rectangle
 import com.pixelatedmind.game.tinyuniverse.flocking.Flock
 import com.pixelatedmind.game.tinyuniverse.flocking.GenericBoidImpl
-import com.pixelatedmind.game.tinyuniverse.flocking.SeparationSteeringRuleImpl
+import com.pixelatedmind.game.tinyuniverse.flocking.rule.RectSeparationSteeringRuleImpl
 import kotlin.system.measureTimeMillis
 
 class RectangleFactorySeparationDecoratorImpl(private val rectFactory:RectangleFactory, private val maxSecsToRunSeparationSimulation : Float=20f) : RectangleFactory {
@@ -35,7 +35,7 @@ class RectangleFactorySeparationDecoratorImpl(private val rectFactory:RectangleF
     private fun createFlock(boids : List<GenericBoidImpl<Rectangle>>):Flock{
         //set boid position to center of rect it represents
         boids.forEach{it.value.getCenter(it.getPosition())}
-        val rule = SeparationSteeringRuleImpl()
+        val rule = RectSeparationSteeringRuleImpl()
         val flock = Flock(boids, listOf(rule))
         return flock
     }
