@@ -28,7 +28,7 @@ class WordGeneratorViewer : ApplicationAdapter() {
                 Biome.Grassland to BiomeData(.3,.2,.5),
                 Biome.Jungle to BiomeData(.66, .3,.5),
                 Biome.Mountains to BiomeData(0.0, .5,0.0),
-                Biome.Ocean to BiomeData(0.0,0.0,0.0),
+                Biome.Water to BiomeData(0.0,0.0,0.0),
                 Biome.Tundra to BiomeData(0.0, .2, 0.0)
         )
         val resolver = BiomeResolver(biomeMap)
@@ -56,7 +56,7 @@ class WordGeneratorViewer : ApplicationAdapter() {
                 Biome.Tundra to StaticTiledMapTile(biomeTiles[0][1]),
                 Biome.Desert to StaticTiledMapTile(biomeTiles[0][2]),
                 Biome.Forest to StaticTiledMapTile(biomeTiles[0][3]),
-                Biome.Ocean to StaticTiledMapTile(biomeTiles[0][4]),
+                Biome.Water to StaticTiledMapTile(biomeTiles[0][4]),
                 Biome.Mountains to StaticTiledMapTile(biomeTiles[0][5]),
                 Biome.Jungle to StaticTiledMapTile(biomeTiles[0][6])
         )

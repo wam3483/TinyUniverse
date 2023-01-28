@@ -7,6 +7,6 @@ enum class Biome {
     Grassland,
     Jungle,
     Mountains,
-    Ocean,
+    Water,
     Tundra
 }
