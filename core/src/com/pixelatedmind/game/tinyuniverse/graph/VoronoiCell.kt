@@ -2,8 +2,8 @@ package com.pixelatedmind.game.tinyuniverse.graph
 
 import com.badlogic.gdx.math.Vector2
 
-class VoronoiCell(private val indices:List<Int>, private val edges : List<Triangle>) {
-    fun getEdges() : List<Triangle> {
+class VoronoiCell(private val indices:List<Int>, private val edges : List<TriangleVectorImpl>) {
+    fun getEdges() : List<TriangleVectorImpl> {
         return indices.map{edges[it]}
     }
 

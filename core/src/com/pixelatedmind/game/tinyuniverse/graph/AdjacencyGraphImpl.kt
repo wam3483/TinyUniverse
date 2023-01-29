@@ -19,4 +19,8 @@ class AdjacencyGraphImpl<T>() : Graph<T>{
         addValue(n2)
         adjacencyList[n1]!!.add(n2)
     }
+
+    override fun getVertices(): List<T> {
+        return adjacencyList.keys.toList()
+    }
 }

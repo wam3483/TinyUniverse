@@ -2,11 +2,12 @@ package com.pixelatedmind.game.tinyuniverse.graph
 
 class VoronoiGraph<T>(points: List<GenericVector2<T>>) {
     val delaunayGraph = TriangleMeshGraph(points)
-    private val voronoiGraphSites = mutableListOf<Triangle>()//<-- each deluanay triangle
+    private val voronoiGraphSites = mutableListOf<TriangleVectorImpl>()//<-- each deluanay triangle
     private val voronoiGraphAdjacencyList = mutableListOf<Int>() //<-- edge defined by pairs of voronoiGraphSite indices
     private val cells = mutableListOf<VoronoiCell>()
     init{
         initVoronoiFromDelaunay()
+        initVoronoiFromDelaunay2()
     }
 
     fun getVoronoiCells():List<VoronoiCell>{
@@ -26,11 +27,11 @@ class VoronoiGraph<T>(points: List<GenericVector2<T>>) {
         return false
     }
 
-    fun getEdges():List<Triangle>{
+    fun getEdges():List<TriangleVectorImpl>{
         return voronoiGraphAdjacencyList.map{voronoiGraphSites[it]}
     }
 
-    private fun indexOfVoronoiEdge(t1:Triangle, t2:Triangle):Int{
+    private fun indexOfVoronoiEdge(t1:TriangleVectorImpl, t2:TriangleVectorImpl):Int{
         var i = 0
         var i1 = voronoiGraphSites.indexOf(t1)
         var i2 = voronoiGraphSites.indexOf(t2)
@@ -45,8 +46,16 @@ class VoronoiGraph<T>(points: List<GenericVector2<T>>) {
         return -1
     }
 
+    private fun initVoronoiFromDelaunay2(){
+        val voronoiGraphSitesMap = mutableSetOf<TriangleVectorImpl>()
+        delaunayGraph.vertices.forEach { vertex ->
+            //get set of triangles set1 which all share given vertex
+            val triangles = delaunayGraph.getTrianglesByVertex(vertex)
+        }
+    }
+
     private fun initVoronoiFromDelaunay(){
-        val voronoiGraphSitesMap = mutableSetOf<Triangle>()
+        val voronoiGraphSitesMap = mutableSetOf<TriangleVectorImpl>()
         delaunayGraph.vertices.forEach { vertex ->
             //get set of triangles set1 which all share given vertex
             val triangles = delaunayGraph.getTrianglesByVertex(vertex)
@@ -54,7 +63,7 @@ class VoronoiGraph<T>(points: List<GenericVector2<T>>) {
         }
         this.voronoiGraphSites.addAll(voronoiGraphSitesMap)
 
-        val trianglesWithSharedEdge = mutableListOf<Triangle>()
+        val trianglesWithSharedEdge = mutableListOf<TriangleVectorImpl>()
         delaunayGraph.vertices.forEach{vertex->
 
             val triangles = delaunayGraph.getTrianglesByVertex(vertex)

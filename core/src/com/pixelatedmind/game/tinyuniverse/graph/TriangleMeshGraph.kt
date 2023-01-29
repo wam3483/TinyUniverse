@@ -1,6 +1,5 @@
 package com.pixelatedmind.game.tinyuniverse.graph
 
-import com.badlogic.gdx.graphics.g3d.particles.values.MeshSpawnShapeValue
 import com.badlogic.gdx.math.DelaunayTriangulator
 import com.badlogic.gdx.math.Vector2
 import java.util.*
@@ -29,7 +28,7 @@ class TriangleMeshGraph<T>(val vertices:List<GenericVector2<T>>){
         return edges
     }
 
-    fun getTrianglesByVertex(vertex:Vector2) : List<Triangle>{
+    fun getTrianglesByVertex(vertex:Vector2) : List<TriangleVectorImpl>{
         val index = vertices.indexOfFirst{it.x==vertex.x && it.y==vertex.y}
         val indicesOfVertexIndexInGraph = getIndicesForVertexIndex(index)
 
@@ -40,7 +39,7 @@ class TriangleMeshGraph<T>(val vertices:List<GenericVector2<T>>){
             val v2 = vertices[triangleMeshVertexIndexGraph[triangleStartOffset].toInt()]
             triangleStartOffset++
             val v3 = vertices[triangleMeshVertexIndexGraph[triangleStartOffset].toInt()]
-            Triangle(v1,v2,v3)
+            TriangleVectorImpl(v1,v2,v3)
         }
         return trianglesWithSharedVertex
     }
