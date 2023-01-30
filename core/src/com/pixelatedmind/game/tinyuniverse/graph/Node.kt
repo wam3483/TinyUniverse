@@ -22,7 +22,7 @@ class Node<T>(val value : T) {
                 node.children.forEach{child->
                     if(edges.none{it.n1==child}) {
                         val edge = Edge(node, child)
-                        edges.add(edge)
+//                        edges.add(edge.)
                         stack.push(child)
                     }
                 }

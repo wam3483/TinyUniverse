@@ -5,7 +5,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.pixelatedmind.game.tinyuniverse.screen.AutoTileMapperTester;
 import com.pixelatedmind.game.tinyuniverse.screen.TiledMapRegionViewer;
 import com.pixelatedmind.game.tinyuniverse.screen.VoronoiGraphViewer;
-import com.pixelatedmind.game.tinyuniverse.screen.WordGeneratorViewer;
+//import com.pixelatedmind.game.tinyuniverse.screen.WordGeneratorViewer;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {

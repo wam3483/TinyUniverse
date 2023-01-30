@@ -47,8 +47,8 @@ class RegionGenerator(private val rectangleFactory: RectangleFactory,
                 break;
             }
             val edge = edges.edges[random.nextInt(edges.edges.size)]
-            val n1children = connectedGraph.getChildren(edge.n1.value)!!
-            val e2 = Edge(edge.n1, n1children[random.nextInt(n1children.size)])
+            val n1children = connectedGraph.getChildren(edge.n1)!!
+            val e2 = Edge(edge.n1, n1children[random.nextInt(n1children.size)].value)
             if (!edges.contains(e2)) {
                 numAdded++
                 iterations = 0

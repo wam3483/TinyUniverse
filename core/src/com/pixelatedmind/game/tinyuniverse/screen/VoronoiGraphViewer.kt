@@ -3,12 +3,12 @@ package com.pixelatedmind.game.tinyuniverse.screen
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
+import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraphBuilder
+import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiEdge
 import com.pixelatedmind.game.tinyuniverse.graph.VoronoiGraph
-import com.pixelatedmind.game.tinyuniverse.graph.GenericVector2
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
 import java.util.*
@@ -27,25 +27,29 @@ class VoronoiGraphViewer : ApplicationAdapter(), InputProcessor {
     var showVoronoiVerticesGraph = true
     var showVoronoiCellCentroid = false
 
+    lateinit var mapTest : Map<Vector2, List<DelaunayVoronoiEdge>>
+
     fun reInit(){
-        voronoiGraph = VoronoiGraph(getPointCloud(1000).map{ GenericVector2<String>("",it.x,it.y) })
-        sourceVoronoiGraph = voronoiGraph
-        repeat(5) {
-            sourceVoronoiGraph = VoronoiGraph(sourceVoronoiGraph.getVoronoiCells().map { it.centroid() }.map { GenericVector2<String>("", it.x, it.y) })
-        }
-        dstVoronoiGraph = VoronoiGraph(sourceVoronoiGraph.getVoronoiCells().map{it.centroid()}.map{ GenericVector2<String>("",it.x,it.y) })
-        sourceVoronoiGraph = voronoiGraph
-        voronoiGraph = sourceVoronoiGraph
+        val mapper = DelaunayVoronoiGraphBuilder()
+        mapTest = mapper.buildDelaunayVoronoiGraph(getPointCloud(1000, 1000, 1000))
+        mapTest = mapper.buildDelaunayVoronoiGraph(getPointCloud(1000, 1000, 1000))
+
+//        voronoiGraph = VoronoiGraph(getPointCloud(1000).map{ GenericVector2<String>("",it.x,it.y) })
+//        sourceVoronoiGraph = voronoiGraph
+//        repeat(5) {
+//            sourceVoronoiGraph = VoronoiGraph(sourceVoronoiGraph.getVoronoiCells().map { it.centroid() }.map { GenericVector2<String>("", it.x, it.y) })
+//        }
+//        dstVoronoiGraph = VoronoiGraph(sourceVoronoiGraph.getVoronoiCells().map{it.centroid()}.map{ GenericVector2<String>("",it.x,it.y) })
+//        sourceVoronoiGraph = voronoiGraph
+//        voronoiGraph = sourceVoronoiGraph
     }
 
-    private fun getPointCloud(size:Int):List<Vector2>{
-        val w = 400//Gdx.graphics.getWidth().toFloat()
-        val h = 200//Gdx.graphics.getHeight().toFloat()
+    private fun getPointCloud(size:Int, w:Int, h:Int):List<Vector2>{
         val random = Random()
         var i = 0
         val pointCloud = mutableListOf<Vector2>()
         while(i<size){
-            pointCloud.add(Vector2((random.nextDouble()*(w/2)).toFloat(), (random.nextDouble()*h).toFloat()))
+            pointCloud.add(Vector2((random.nextDouble()*(w)).toFloat(), (random.nextDouble()*h).toFloat()))
             i++
         }
         return pointCloud
@@ -61,6 +65,44 @@ class VoronoiGraphViewer : ApplicationAdapter(), InputProcessor {
         val moveInput = KeyboardCameraMoveProcessor(camera!!)
         val multiplex = InputMultiplexer(zoomInput, moveInput, this)
         Gdx.input.inputProcessor = multiplex
+    }
+
+    fun renderTestMap(){
+
+        shapeRenderer.set(ShapeRenderer.ShapeType.Filled)
+
+        shapeRenderer.setColor(0f,0f,0f,1f)
+        mapTest.keys.forEach{
+            val list = mapTest[it]!!
+            list.forEach { edge ->
+                shapeRenderer.line(edge.delaunayN1,edge.delaunayN2)}
+        }
+
+        shapeRenderer.setColor(.6f,0f,0f,1f)
+        mapTest.keys.forEach{
+            shapeRenderer.circle(it.x,it.y,3f)
+        }
+
+        shapeRenderer.setColor(1f,1f,1f,1f)
+        mapTest.keys.forEach{
+            val list = mapTest[it]!!
+            list.forEach{edge->
+                if(edge.voronoiN1!=null && edge.voronoiN2!=null)
+                    shapeRenderer.line(edge.voronoiN1!!.x,edge.voronoiN1!!.y,
+                            edge.voronoiN2!!.x,edge.voronoiN2!!.y)
+            }
+        }
+
+        shapeRenderer.setColor(0f,0f,.6f,1f)
+        mapTest.keys.forEach{
+            val list = mapTest[it]!!
+            list.forEach{edge->
+                if(edge.voronoiN1!=null)
+                    shapeRenderer.circle(edge.voronoiN1!!.x,edge.voronoiN1!!.y,2f)
+                if(edge.voronoiN2!=null)
+                   shapeRenderer.circle(edge.voronoiN2!!.x,edge.voronoiN2!!.y,2f)
+            }
+        }
     }
 
     fun renderVoronoi(){
@@ -131,29 +173,30 @@ class VoronoiGraphViewer : ApplicationAdapter(), InputProcessor {
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.begin()
-        if(showVoronoiGraph) {
-            renderVoronoi()
-        }
-        if(showVoronoiVerticesGraph){
-            renderVoronoiVertices()
-        }
-        if(showDelaunayGraph) {
-            renderDulaunay()
-        }
-        if(showPointCloud) {
-            renderPointCloud()
-        }
-        if(showVoronoiCellCentroid) {
-            renderVoronoiCenters()
-        }
-        if(this.voronoiGraph == sourceVoronoiGraph){
-
-            shapeRenderer.setColor(1f,0f,1f,1f)
-            shapeRenderer.circle(0f,0f,10f)
-        }else {
-            shapeRenderer.setColor(1f,1f,1f,1f)
-            shapeRenderer.circle(0f,0f,10f)
-        }
+        renderTestMap()
+//        if(showVoronoiGraph) {
+//            renderVoronoi()
+//        }
+//        if(showVoronoiVerticesGraph){
+//            renderVoronoiVertices()
+//        }
+//        if(showDelaunayGraph) {
+//            renderDulaunay()
+//        }
+//        if(showPointCloud) {
+//            renderPointCloud()
+//        }
+//        if(showVoronoiCellCentroid) {
+//            renderVoronoiCenters()
+//        }
+//        if(this.voronoiGraph == sourceVoronoiGraph){
+//
+//            shapeRenderer.setColor(1f,0f,1f,1f)
+//            shapeRenderer.circle(0f,0f,10f)
+//        }else {
+//            shapeRenderer.setColor(1f,1f,1f,1f)
+//            shapeRenderer.circle(0f,0f,10f)
+//        }
         shapeRenderer.end()
     }
 

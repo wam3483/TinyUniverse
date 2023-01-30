@@ -4,7 +4,7 @@ import hoten.perlin.Perlin2d
 import java.util.*
 
 class WorldGenerator(val biomeResolver:BiomeResolver, val width : Int, val height: Int, val seed:Long) {
-    fun generate() : WorldModel{
+    fun generate() : WorldModel?{
         val random = Random(seed)
         val persistence = .5
         val octaves = 8
@@ -25,7 +25,8 @@ class WorldGenerator(val biomeResolver:BiomeResolver, val width : Int, val heigh
             }
             y++
         }
-        return WorldModel(biomeCells, listOf())
+        return null
+//        return WorldModel(biomeCells)
     }
 
     private fun generateNoise(persistence:Double, octaves:Int, seed:Int): List<List<Double>> {

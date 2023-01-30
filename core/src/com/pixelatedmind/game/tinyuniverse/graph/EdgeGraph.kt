@@ -6,8 +6,8 @@ class EdgeGraph<T> (graphEdges : List<Edge<T>>){
     private fun getAllValuesAsMap():Set<T>{
         val hashset = mutableSetOf<T>()
         edges.forEach{
-            hashset.add(it.n1.value)
-            hashset.add(it.n2.value)
+            hashset.add(it.n1)
+            hashset.add(it.n2)
         }
         return hashset
     }

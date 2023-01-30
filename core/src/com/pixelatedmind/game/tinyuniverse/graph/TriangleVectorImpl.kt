@@ -4,6 +4,9 @@ import com.badlogic.gdx.math.GeometryUtils
 import com.badlogic.gdx.math.Vector2
 
 class TriangleVectorImpl(var v1: Vector2=Vector2(), var v2:Vector2=Vector2(), var v3:Vector2=Vector2()) : Triangle<Vector2>{
+    fun centroid() : Vector2{
+        return centroid(null)
+    }
     override fun centroid(output : Vector2?) : Vector2 {
         var temp = output
         if(temp== null){
@@ -12,7 +15,7 @@ class TriangleVectorImpl(var v1: Vector2=Vector2(), var v2:Vector2=Vector2(), va
         return GeometryUtils.triangleCentroid(v1.x,v1.y,v2.x,v2.y,v3.x,v3.y,temp)
     }
 
-    override fun set(t1:Vector2, t2:Vector2, t3:Vector2):Vector2{
+    override fun set(t1:Vector2, t2:Vector2, t3:Vector2):Triangle<Vector2>{
         this.v1 = t1
         this.v2 = t2
         this.v3 = t3

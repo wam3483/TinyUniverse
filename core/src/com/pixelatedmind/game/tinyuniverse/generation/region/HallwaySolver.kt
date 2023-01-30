@@ -13,13 +13,13 @@ class HallwaySolver(val hallwaySize:Float, val mainRooms: EdgeGraph<Rectangle>, 
         val rect = Rectangle()
         rect.x = left
         rect.width = hallwaySize
-        if(edge.n1.value.y<edge.n2.value.y){
-            rect.y = edge.n1.value.top()
-            rect.height = edge.n2.value.y-edge.n1.value.top()
+        if(edge.n1.y<edge.n2.y){
+            rect.y = edge.n1.top()
+            rect.height = edge.n2.y-edge.n1.top()
         }
         else{
-            rect.y = edge.n2.value.top()
-            rect.height = edge.n1.value.y - edge.n2.value.top()
+            rect.y = edge.n2.top()
+            rect.height = edge.n1.y - edge.n2.top()
         }
         return rect
     }
@@ -28,12 +28,12 @@ class HallwaySolver(val hallwaySize:Float, val mainRooms: EdgeGraph<Rectangle>, 
         val rect = Rectangle()
         rect.y = yAxisOverlap.mid()-hallwaySize/2
         rect.height = hallwaySize
-        if(edge.n1.value.right()<edge.n2.value.x){
-            rect.x = edge.n1.value.right()
-            rect.width = edge.n2.value.x - edge.n1.value.right()
+        if(edge.n1.right()<edge.n2.x){
+            rect.x = edge.n1.right()
+            rect.width = edge.n2.x - edge.n1.right()
         }else{
-            rect.x = edge.n2.value.right()
-            rect.width = edge.n1.value.x - edge.n2.value.right()
+            rect.x = edge.n2.right()
+            rect.width = edge.n1.x - edge.n2.right()
         }
         return rect
     }
@@ -49,12 +49,12 @@ class HallwaySolver(val hallwaySize:Float, val mainRooms: EdgeGraph<Rectangle>, 
         val hallways = mutableListOf<Rectangle>()
         val doors = mutableListOf<Vector2>()
         mainRooms.edges.forEach {
-            val sharedRoomWall = it.n1.value.getSharedEdge(it.n2.value)
+            val sharedRoomWall = it.n1.getSharedEdge(it.n2)
             if(sharedRoomWall!=null){
                 doors.add(sharedRoomWall.midPoint())
             }else{
-                val xOverlap = it.n1.value.xAxisOverlap(it.n2.value)
-                val yOverlap = it.n1.value.yAxisOverlap(it.n2.value)
+                val xOverlap = it.n1.xAxisOverlap(it.n2)
+                val yOverlap = it.n1.yAxisOverlap(it.n2)
                 //both should never be non-null at the same time
                 //
                 //if both are null OR
@@ -65,18 +65,18 @@ class HallwaySolver(val hallwaySize:Float, val mainRooms: EdgeGraph<Rectangle>, 
                         (xOverlap!=null && xOverlap.size()<hallwaySize) ||
                         (yOverlap!=null && yOverlap.size()<hallwaySize)){
 
-                    var topRect = it.n1.value
-                    var bottomRect = it.n2.value
+                    var topRect = it.n1
+                    var bottomRect = it.n2
                     if(topRect.y<bottomRect.y){
-                        topRect = it.n2.value
-                        bottomRect = it.n1.value
+                        topRect = it.n2
+                        bottomRect = it.n1
                     }
 
-                    var leftRect = it.n1.value
-                    var rightRect = it.n2.value
+                    var leftRect = it.n1
+                    var rightRect = it.n2
                     if(leftRect.x>rightRect.x){
-                        leftRect = it.n2.value
-                        rightRect = it.n1.value
+                        leftRect = it.n2
+                        rightRect = it.n1
                     }
 
                     val vertRect = Rectangle()
