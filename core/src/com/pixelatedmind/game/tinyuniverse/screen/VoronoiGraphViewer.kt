@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraphBuilder
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiEdge
+import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraph
 import com.pixelatedmind.game.tinyuniverse.graph.VoronoiGraph
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
@@ -27,12 +28,12 @@ class VoronoiGraphViewer : ApplicationAdapter(), InputProcessor {
     var showVoronoiVerticesGraph = true
     var showVoronoiCellCentroid = false
 
-    lateinit var mapTest : Map<Vector2, List<DelaunayVoronoiEdge>>
+    lateinit var mapTest : DelaunayVoronoiGraph
 
     fun reInit(){
         val mapper = DelaunayVoronoiGraphBuilder()
         mapTest = mapper.buildDelaunayVoronoiGraph(getPointCloud(1000, 1000, 1000))
-        mapTest = mapper.buildDelaunayVoronoiGraph(getPointCloud(1000, 1000, 1000))
+//        mapTest = mapper.buildDelaunayVoronoiGraph(getPointCloud(1000, 1000, 1000))
 
 //        voronoiGraph = VoronoiGraph(getPointCloud(1000).map{ GenericVector2<String>("",it.x,it.y) })
 //        sourceVoronoiGraph = voronoiGraph
@@ -72,37 +73,38 @@ class VoronoiGraphViewer : ApplicationAdapter(), InputProcessor {
         shapeRenderer.set(ShapeRenderer.ShapeType.Filled)
 
         shapeRenderer.setColor(0f,0f,0f,1f)
-        mapTest.keys.forEach{
-            val list = mapTest[it]!!
-            list.forEach { edge ->
-                shapeRenderer.line(edge.delaunayN1,edge.delaunayN2)}
-        }
-
-        shapeRenderer.setColor(.6f,0f,0f,1f)
-        mapTest.keys.forEach{
-            shapeRenderer.circle(it.x,it.y,3f)
-        }
-
-        shapeRenderer.setColor(1f,1f,1f,1f)
-        mapTest.keys.forEach{
-            val list = mapTest[it]!!
-            list.forEach{edge->
-                if(edge.voronoiN1!=null && edge.voronoiN2!=null)
-                    shapeRenderer.line(edge.voronoiN1!!.x,edge.voronoiN1!!.y,
-                            edge.voronoiN2!!.x,edge.voronoiN2!!.y)
+        mapTest.flattenDelaunayVertices().forEach{
+            val edges = mapTest.getEdges(it)!!
+            edges.forEach { edge ->
+                shapeRenderer.line(edge.delaunayN1, edge.delaunayN2)
             }
         }
 
-        shapeRenderer.setColor(0f,0f,.6f,1f)
-        mapTest.keys.forEach{
-            val list = mapTest[it]!!
-            list.forEach{edge->
-                if(edge.voronoiN1!=null)
-                    shapeRenderer.circle(edge.voronoiN1!!.x,edge.voronoiN1!!.y,2f)
-                if(edge.voronoiN2!=null)
-                   shapeRenderer.circle(edge.voronoiN2!!.x,edge.voronoiN2!!.y,2f)
-            }
-        }
+//        shapeRenderer.setColor(.6f,0f,0f,1f)
+//        mapTest.keys.forEach{
+//            shapeRenderer.circle(it.x,it.y,3f)
+//        }
+//
+//        shapeRenderer.setColor(1f,1f,1f,1f)
+//        mapTest.keys.forEach{
+//            val list = mapTest[it]!!
+//            list.forEach{edge->
+//                if(edge.voronoiN1!=null && edge.voronoiN2!=null)
+//                    shapeRenderer.line(edge.voronoiN1!!.x,edge.voronoiN1!!.y,
+//                            edge.voronoiN2!!.x,edge.voronoiN2!!.y)
+//            }
+//        }
+//
+//        shapeRenderer.setColor(0f,0f,.6f,1f)
+//        mapTest.keys.forEach{
+//            val list = mapTest[it]!!
+//            list.forEach{edge->
+//                if(edge.voronoiN1!=null)
+//                    shapeRenderer.circle(edge.voronoiN1!!.x,edge.voronoiN1!!.y,2f)
+//                if(edge.voronoiN2!=null)
+//                   shapeRenderer.circle(edge.voronoiN2!!.x,edge.voronoiN2!!.y,2f)
+//            }
+//        }
     }
 
     fun renderVoronoi(){

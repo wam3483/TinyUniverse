@@ -1,7 +1,7 @@
 package com.pixelatedmind.game.tinyuniverse.graph
 
-class AdjacencyGraphImpl<T>() : Graph<T>{
-    private val adjacencyList = mutableMapOf<T, MutableList<T>>()
+class AdjacencyGraphImpl<T>(map:Map<T,MutableList<T>> = mapOf()) : Graph<T>{
+    private val adjacencyList = map.toMutableMap()
     fun addValue(value:T){
         if(!adjacencyList.contains(value)){
             adjacencyList[value] = mutableListOf<T>()
