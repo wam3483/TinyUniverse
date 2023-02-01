@@ -22,6 +22,7 @@ import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraphBuilder
 import com.pixelatedmind.game.tinyuniverse.graph.Graph
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
+import com.pixelatedmind.game.tinyuniverse.maps.tiled.SingleValueBitmapImpl
 import com.pixelatedmind.game.tinyuniverse.renderer.WorldModelRenderer
 import com.pixelatedmind.game.tinyuniverse.renderer.WorldModelRendererConfig
 import space.earlygrey.shapedrawer.ShapeDrawer
@@ -91,7 +92,8 @@ class WordGeneratorViewer : ApplicationAdapter() {
         }
         val lineRandom = Random(random.nextLong())
         val lineInterpolator = QuadrilateralLineInterpolaterImpl(lineRandom)
-        val worldModelGraphMapper = DelaunayVoronoiGraphWorldModelMapper(lineInterpolator)
+        val singleValueBitmap = SingleValueBitmapImpl(true)
+        val worldModelGraphMapper = DelaunayVoronoiGraphWorldModelMapper(lineInterpolator,singleValueBitmap)
         val graph = worldModelGraphMapper.map(dvGraph)
         return graph
     }

@@ -1,43 +1,21 @@
 package com.pixelatedmind.game.tinyuniverse.generation.world
 
-import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 import com.pixelatedmind.game.tinyuniverse.graph.*
+import com.pixelatedmind.game.tinyuniverse.maps.tiled.Bitmap
 import java.util.*
 
-class DelaunayVoronoiGraphWorldModelMapper(val lineInterpolator: LineInterpolator) {
+class DelaunayVoronoiGraphWorldModelMapper(val borderNoise: LineInterpolator, val landmassBitmap : Bitmap) {
 
-    val biomes = listOf(Biome.Grassland,Biome.Tundra,Biome.Desert, Biome.Jungle, Biome.Mountains, Biome.Water,Biome.Forest)
+    private val biomes = listOf(Biome.Grassland,Biome.Tundra,Biome.Desert, Biome.Jungle, Biome.Mountains, Biome.Water,Biome.Forest)
 
     fun map(graph : DelaunayVoronoiGraph) : Graph<WorldPolygonModel> {
+        val waterLandMapper = DelaunayVoronoiGraphWaterMapper(landmassBitmap)
+        val vectorWorldPolygonModelMap = waterLandMapper.map(graph)
+        val edgeDetailMapper = WorldPolygonEdgeDetailMapper(borderNoise)
+        val graph = edgeDetailMapper.map(vectorWorldPolygonModelMap)
 
-        val graphModel = mutableMapOf<WorldPolygonModel, MutableList<WorldPolygonModel>>()
-        val vectorToWorldPolygonModel = mutableMapOf<Vector2, WorldPolygonModel>()
-
-        val edgePointMap = mutableMapOf<DelaunayVoronoiEdge, List<Vector2>>()
-        graph.flattenDelaunayVertices().forEach{delaunayVertex->
-            val worldCellModel = vectorToPolygonWorldData(graph, delaunayVertex, edgePointMap)
-            if(worldCellModel!=null) {
-                vectorToWorldPolygonModel[delaunayVertex] = worldCellModel
-            }
-        }
-
-        graph.flattenDelaunayVertices().forEach{delaunayVertex->
-            val worldModel = vectorToWorldPolygonModel[delaunayVertex]
-            if(worldModel!=null) {
-                val edges = graph.getEdges(delaunayVertex)!!
-                val connectedVerts = edges.map {
-                    if (it.delaunayN1 == delaunayVertex) {
-                        it.delaunayN2
-                    }
-                    it.delaunayN1
-                }
-                graphModel[worldModel] = connectedVerts.map { vectorToWorldPolygonModel[it] }
-                        .filterNotNull()
-                        .toMutableList()
-            }
-        }
-        return AdjacencyGraphImpl(graphModel)
+        return graph
     }
 
     private fun vectorToPolygonWorldData(graph : DelaunayVoronoiGraph, delaunayVertex:Vector2,
@@ -47,16 +25,8 @@ class DelaunayVoronoiGraphWorldModelMapper(val lineInterpolator: LineInterpolato
             return null
         }
 
-        val correctBorderEdges = mutableListOf<DelaunayVoronoiEdge>()
-        val firstEdge = edges[0]
-        var currentEdge : DelaunayVoronoiEdge? = firstEdge
-        while(currentEdge!=null){
-            correctBorderEdges.add(currentEdge)
-            currentEdge = edges.firstOrNull{!correctBorderEdges.any{e->e.voronoiN1==it.voronoiN1 && e.voronoiN2==it.voronoiN2} &&
-                    (it.voronoiN1==currentEdge!!.voronoiN1 || it.voronoiN2==currentEdge!!.voronoiN2)}
-        }
-
         val borderSegmentPoints = edges.map{ edge->
+            //getting key a little different since the hashset and equals function for edge won't work for this
             val key = edgePointCache.keys.firstOrNull{
                 (it.voronoiN1==edge.voronoiN1 && it.voronoiN2==edge.voronoiN2)
                         ||
@@ -68,13 +38,13 @@ class DelaunayVoronoiGraphWorldModelMapper(val lineInterpolator: LineInterpolato
                 points = edgePointCache[key]
             }
             if(points == null){
-                points = lineInterpolator.interpolate(edge, 1f, 0f)
+                points = borderNoise.interpolate(edge, 1f, 0f)
                 edgePointCache[edge] = points
             }
-            points!!
+            Pair(edge,points!!)
         }
-        val modelEdges = borderSegmentPoints.map {polygonEdge->
-            WorldPolygonModel.Edge(polygonEdge, WorldPolygonModel.EdgeType.None, 1f) }
+        val modelEdges = borderSegmentPoints.map {graphEdgeAndPoints->
+            WorldPolygonModel.Edge(graphEdgeAndPoints.second, graphEdgeAndPoints.first, WorldPolygonModel.EdgeType.None, 1f) }
 
         val model = WorldPolygonModel(modelEdges, biomes[index % biomes.size])
         ++index
