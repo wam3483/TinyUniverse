@@ -1,5 +1,8 @@
 package com.pixelatedmind.game.tinyuniverse.generation.world
 
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.BiomeDataModel
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldModel
 import hoten.perlin.Perlin2d
 import java.util.*
 
@@ -18,7 +21,7 @@ class WorldGenerator(val biomeResolver:BiomeResolver, val width : Int, val heigh
             val row = mutableListOf<Biome>()
             biomeCells.add(row)
             while(x<tempMap[0].size){
-                val biomeData = BiomeData(tempMap[y][x], heightMap[y][x], humidityMap[y][x])
+                val biomeData = BiomeDataModel(heightMap[y][x], humidityMap[y][x])
                 val biome = biomeResolver.map(biomeData)
                 row.add(biome)
                 x++

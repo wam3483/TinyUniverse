@@ -1,11 +1,10 @@
-package com.pixelatedmind.game.tinyuniverse.generation.world
+package com.pixelatedmind.game.tinyuniverse.generation.world.model
 
 import com.badlogic.gdx.math.Vector2
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiEdge
 
-class WorldPolygonModel(val borderEdges: List<Edge>, val biome: Biome) {
+class WorldPolygonModel(val borderEdges: List<Edge>, var biome: Biome, val delaunayVertex : Vector2) {
     fun flattenBorder() : List<Vector2>{
-//        return borderEdges.map{it.borderPoints}.flatten()
         val result = mutableListOf<Vector2>()
 
         val possibleEdges = mutableListOf<Edge>()
@@ -26,11 +25,12 @@ class WorldPolygonModel(val borderEdges: List<Edge>, val biome: Biome) {
         }
         return result.distinct()
     }
-    class Edge(val borderPoints:List<Vector2>, val connectingEdge: DelaunayVoronoiEdge, val edgeType:EdgeType, val thickness:Float){
-
+    class Edge(val borderPoints:List<Vector2>, val connectingEdge: DelaunayVoronoiEdge, var edgeType: EdgeType, val thickness:Float){
+        val adjacentWorldPolygonModels = mutableListOf<WorldPolygonModel>()
     }
     enum class EdgeType{
         None,
+        Waterline,
         River,
         Crack
     }

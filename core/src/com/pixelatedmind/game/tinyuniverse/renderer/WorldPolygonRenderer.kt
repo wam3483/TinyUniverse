@@ -1,15 +1,12 @@
 package com.pixelatedmind.game.tinyuniverse.renderer
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.EarClippingTriangulator
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.Array
-import com.pixelatedmind.game.tinyuniverse.generation.world.WorldPolygonModel
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 import space.earlygrey.shapedrawer.ShapeDrawer
 
-class WorldPolygonRenderer(worldPolygonModel : WorldPolygonModel){
+class WorldPolygonRenderer(val worldPolygonModel : WorldPolygonModel){
     var color = Color.WHITE
     val borderPoints : List<Vector2>
     val indices : List<Int>

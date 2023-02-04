@@ -1,6 +1,7 @@
-package com.pixelatedmind.game.tinyuniverse.generation.world
+package com.pixelatedmind.game.tinyuniverse.generation.world.mapper
 
 import com.badlogic.gdx.math.Vector2
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonBiomeModel
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiEdge
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraph
@@ -10,7 +11,7 @@ import com.pixelatedmind.game.tinyuniverse.maps.tiled.Bitmap
  * Assigns voronoi regions as either water biome, or unknown by querying a bitmap for true/false values respectively.
  * Land bitmap should return true to indicate region should be land, and false for water.
  */
-class DelaunayVoronoiGraphWaterMapper(val landBitmap: Bitmap) {
+class DelaunayVoronoiGraphLandMassMapper(val landBitmap: Bitmap) {
 
     fun map(graph : DelaunayVoronoiGraph):Map<Vector2, WorldPolygonBiomeModel>{
         val vectorToWorldPolygonModel = mutableMapOf<Vector2, WorldPolygonBiomeModel>()
@@ -44,15 +45,11 @@ class DelaunayVoronoiGraphWaterMapper(val landBitmap: Bitmap) {
                 (potentialEdge.voronoiN1==currentEdge!!.voronoiN1 || potentialEdge.voronoiN2==currentEdge!!.voronoiN2
                         || potentialEdge.voronoiN1==currentEdge!!.voronoiN2 || potentialEdge.voronoiN2==currentEdge!!.voronoiN1)}
         }
-        ++index
-        val biomes = listOf(Biome.Grassland, Biome.Mountains)
         val isLandBiome = landBitmap.getValue(delaunayVertex.x.toInt(),delaunayVertex.y.toInt())
-        val biome = biomes[index%biomes.size]
-//                when(isLandBiome){
-//            true->Biome.Water
-//            else->Biome.Unknown
-//        }
+        val biome = when(isLandBiome){
+            true-> Biome.Water
+            else-> Biome.Unknown
+        }
         return WorldPolygonBiomeModel(biome, correctBorderEdges)
     }
-    var index = 0
 }

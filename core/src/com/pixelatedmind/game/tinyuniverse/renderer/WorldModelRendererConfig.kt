@@ -3,23 +3,68 @@ package com.pixelatedmind.game.tinyuniverse.renderer
 import com.badlogic.gdx.graphics.Color
 import com.pixelatedmind.game.tinyuniverse.extensions.color.darker
 import com.pixelatedmind.game.tinyuniverse.extensions.color.lighter
-import com.pixelatedmind.game.tinyuniverse.generation.world.Biome
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 
 class WorldModelRendererConfig {
 
+    val edgeTypeColorMap = mutableMapOf<WorldPolygonModel.EdgeType, Color>()
+
     val biomeColorMap = mutableMapOf<Biome, Color>()
+
+    val waterlineEdgeThickness = 2f
     init{
-        biomeColorMap[Biome.Unknown] = Color.RED
-        biomeColorMap[Biome.Water] = Color(.2f,.4f,.6f,1f)
-        biomeColorMap[Biome.Grassland] = Color(.53f, .66f,.33f, 1f)
-        biomeColorMap[Biome.Forest] = Color(.39f,.58f,.35f,1f)//Color.GREEN
-        biomeColorMap[Biome.Jungle] = Color(.2f,.47f,.33f,1f)//Color.GREEN.darker()
-        biomeColorMap[Biome.Mountains] = Color.LIGHT_GRAY
-        biomeColorMap[Biome.Desert] = Color.BROWN.lighter()
-        biomeColorMap[Biome.Tundra] = Color.WHITE
+        initBiomeColorMap()
+        initEdgeTypeColorMap()
     }
 
-    fun getColorFor(biome:Biome):Color{
-        return biomeColorMap[biome]!!
+    private fun initEdgeTypeColorMap(){
+        edgeTypeColorMap[WorldPolygonModel.EdgeType.Waterline] = rgb(51,51,90)
+    }
+
+    private fun initBiomeColorMap(){
+
+        biomeColorMap[Biome.Water] = rgb(85,125,166)
+
+        biomeColorMap[Biome.Snow] = rgb(240,240,240)
+        biomeColorMap[Biome.Tundra] = rgb(221,221,187)
+        biomeColorMap[Biome.Bare] = rgb(187,187,187)
+        biomeColorMap[Biome.Scorched] = rgb(153,153,153)
+
+        biomeColorMap[Biome.Taiga] = rgb(204,212,187)
+        biomeColorMap[Biome.Shrubland] = rgb(196,204,187)
+        biomeColorMap[Biome.TemperateDesert] = rgb(228,232,202)
+
+        biomeColorMap[Biome.TemperateRainForest] = rgb(156,187,169)
+        biomeColorMap[Biome.TemperateDeciduousForest] = rgb(180,201,169)
+        biomeColorMap[Biome.Grassland] = rgb(196,212,170)
+//        biomeColorMap[Biome.TemperateDesert] = rgb(196,212,170)temperate desert is visually represented ina  chart i'm referencing twice
+
+        biomeColorMap[Biome.TropicalRainForest] = rgb(156,187,169)
+
+        biomeColorMap[Biome.TropicalSeasonalForest] = rgb(169,204,164)
+        biomeColorMap[Biome.SubtropicalDesert] = rgb(233,221,199)
+    }
+
+    fun rgb(r:Int, g:Int, b:Int,a:Int=255) : Color{
+        val r1 = r.toFloat()/255f
+        val g1 = g.toFloat()/255f
+        val b1 = b.toFloat()/255f
+        val a1 = a.toFloat()/255f
+        return Color(r1,g1,b1,a1)
+    }
+
+    fun getColorFor(edgeType : WorldPolygonModel.EdgeType) : Color {
+        val color = edgeTypeColorMap[edgeType]
+        if(color==null)
+            return Color.RED
+        return color
+    }
+
+    fun getColorFor(biome: Biome):Color{
+        val color = biomeColorMap[biome]
+        if(color==null)
+            return Color.RED
+        return color
     }
 }

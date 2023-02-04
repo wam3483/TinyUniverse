@@ -2,8 +2,8 @@
 //
 //import com.badlogic.gdx.maps.tiled.TiledMapTile
 //import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
-//import com.pixelatedmind.game.tinyuniverse.generation.world.Biome
-//import com.pixelatedmind.game.tinyuniverse.generation.world.WorldModel
+//import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
+//import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldModel
 //
 //class BiomeTileLayerMapper (val biomeTileMap : Map<Biome, TiledMapTile>){
 //    fun mapTileLayers(worldModel: WorldModel) : List<TiledMapTileLayer> {

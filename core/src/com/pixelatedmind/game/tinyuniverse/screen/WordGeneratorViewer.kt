@@ -7,24 +7,27 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.math.ConvexHull
-import com.badlogic.gdx.math.DelaunayTriangulator
-import com.badlogic.gdx.math.EarClippingTriangulator
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.Array
 import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.generation.world.*
+import com.pixelatedmind.game.tinyuniverse.generation.world.mapper.DelaunayVoronoiGraphWorldModelMapper
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldModel
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraph
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraphBuilder
 import com.pixelatedmind.game.tinyuniverse.graph.Graph
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
-import com.pixelatedmind.game.tinyuniverse.maps.tiled.SingleValueBitmapImpl
+import com.pixelatedmind.game.tinyuniverse.maps.tiled.Bitmap
+import com.pixelatedmind.game.tinyuniverse.maps.tiled.NoiseBitmap
+import com.pixelatedmind.game.tinyuniverse.maps.tiled.TiledBitmapDecorator
 import com.pixelatedmind.game.tinyuniverse.renderer.WorldModelRenderer
 import com.pixelatedmind.game.tinyuniverse.renderer.WorldModelRendererConfig
+import hoten.perlin.Perlin2d
 import space.earlygrey.shapedrawer.ShapeDrawer
 import java.util.*
 
@@ -32,6 +35,7 @@ import java.util.*
 class WordGeneratorViewer : ApplicationAdapter() {
     lateinit var camera : OrthographicCamera
     lateinit var shapeDrawer : ShapeDrawer
+    lateinit var shapeRenderer : ShapeRenderer
     lateinit var dvGraph : DelaunayVoronoiGraph
     lateinit var graph : Graph<WorldPolygonModel>
     lateinit var batch : SpriteBatch
@@ -39,14 +43,10 @@ class WordGeneratorViewer : ApplicationAdapter() {
 
     lateinit var worldRenderer : WorldModelRenderer
 
+    val randomGen = Random()
     override fun create() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        val randomGen = Random()
-        var seed = randomGen.nextLong()
-        seed = 254921089064146843
-        println("seed = "+seed)
-        random = Random(seed)
 
         camera = OrthographicCamera()
         camera.setToOrtho(false, w, h)
@@ -55,6 +55,16 @@ class WordGeneratorViewer : ApplicationAdapter() {
         val multiplex = InputMultiplexer(zoomInput, moveInput)
         Gdx.input.inputProcessor = multiplex
         initShapeDrawer()
+        reinit()
+
+    }
+
+    fun reinit(){
+        var seed = randomGen.nextLong()
+//        seed = 1412840536380701127 //<small path for waterline
+//        seed = 254921089064146843 //<-- nice looking world
+        println("seed = "+seed)
+        random = Random(seed)
 
         graph = generateWorldModelGraph()
         worldRenderer = WorldModelRenderer(this.shapeDrawer, WorldModel(graph), WorldModelRendererConfig())
@@ -81,19 +91,23 @@ class WordGeneratorViewer : ApplicationAdapter() {
         val region = TextureRegion(texture, 0, 0, 1, 1)
         batch = SpriteBatch()
         shapeDrawer = ShapeDrawer(batch, region)
+        shapeRenderer = ShapeRenderer()
     }
 
     fun generateWorldModelGraph() : Graph<WorldPolygonModel> {
         val graphBuilder = DelaunayVoronoiGraphBuilder()
-        dvGraph = graphBuilder.buildDelaunayVoronoiGraph(getPointCloud(1000,500,500))
-        val iterations = 4
+        val pointCloudW = 500
+        val pointCloudH = 500
+        dvGraph = graphBuilder.buildDelaunayVoronoiGraph(getPointCloud(1000,pointCloudW,pointCloudH))
+        val iterations = 3
         repeat(iterations) {
             dvGraph = graphBuilder.buildDelaunayVoronoiGraph(dvGraph.getCenterOfVoronoiSites())
         }
         val lineRandom = Random(random.nextLong())
+//        val lineInterpolator = NullLineInterpolator()
         val lineInterpolator = QuadrilateralLineInterpolaterImpl(lineRandom)
-        val singleValueBitmap = SingleValueBitmapImpl(true)
-        val worldModelGraphMapper = DelaunayVoronoiGraphWorldModelMapper(lineInterpolator,singleValueBitmap)
+        val bitmap = landmassBitmap(random.nextInt(), pointCloudW, pointCloudH, .5)
+        val worldModelGraphMapper = DelaunayVoronoiGraphWorldModelMapper(lineInterpolator,bitmap, random)
         val graph = worldModelGraphMapper.map(dvGraph)
         return graph
     }
@@ -138,7 +152,23 @@ class WordGeneratorViewer : ApplicationAdapter() {
         shapeDrawer.batch.end()
     }
 
+    fun landmassBitmap(seed:Int, width:Int, height:Int, noiseThreshold:Double): Bitmap {
+        val persistence = .5
+        val octaves = 8
+        val noise = Perlin2d(persistence, octaves, seed)
+        val ary = noise.createTiledArray(width, height)
+        val map = ary.map{it.toList()}
+        return TiledBitmapDecorator(NoiseBitmap(map, noiseThreshold))
+    }
+
+    var timeAccumulatorSecs: Float = 0f
+    val updateMapFrequency : Float = 10f
     override fun render() {
+        timeAccumulatorSecs += Gdx.graphics.deltaTime
+        if(timeAccumulatorSecs>=updateMapFrequency){
+            reinit()
+            timeAccumulatorSecs = 0f
+        }
         ScreenUtils.clear(.4f, .4f, .4f, 1f)
         camera.update()
         batch.projectionMatrix = camera!!.combined

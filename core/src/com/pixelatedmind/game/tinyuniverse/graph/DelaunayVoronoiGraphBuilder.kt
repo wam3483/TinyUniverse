@@ -29,6 +29,12 @@ class DelaunayVoronoiGraphBuilder {
         if(dv !=null){
             dv!!.voronoiN2 = center
         }else{
+            //ensure voronoi edges always runs left to right
+            if(edge.n1.x>edge.n2.x){
+                val temp = edge.n1
+                edge.n1 = edge.n2
+                edge.n2 = temp
+            }
             dv = DelaunayVoronoiEdge(edge.n1, edge.n2, center, null)
             edgeMap[edge] = dv
         }
