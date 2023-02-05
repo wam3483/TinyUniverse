@@ -2,12 +2,14 @@ package com.pixelatedmind.game.tinyuniverse.generation.world.mapper
 
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
-import com.pixelatedmind.game.tinyuniverse.generation.world.model.BiomeDataModel
+import com.pixelatedmind.game.tinyuniverse.generation.ModelFilter
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
+import com.pixelatedmind.game.tinyuniverse.graph.Graph
 import hoten.perlin.Perlin2d
 import java.util.*
 
-class BiomeMapper(val random:Random, private val width:Int, private val height:Int) {
+class BiomeAssignmentMutator(val random:Random, private val width:Int, private val height:Int) : ModelFilter<Graph<WorldPolygonModel>> {
     private val heightMap : List<List<Double>>
     private val humidityMap : List<List<Double>>
     private val rectangleBiomeMap : HashMap<Rectangle, Biome>
@@ -39,6 +41,13 @@ class BiomeMapper(val random:Random, private val width:Int, private val height:I
         )
     }
 
+    fun map(graph: Graph<WorldPolygonModel>){
+        graph.getVertices().filter{model->model.biome == Biome.Unknown}
+                .forEach {
+            it.biome = getBiome(it.delaunayVertex.x.toInt(), it.delaunayVertex.y.toInt())
+        }
+    }
+
     fun getBiome(x:Int, y:Int): Biome {
         val x1 = x % heightMap[0].size
         val y1 = y % heightMap.size
@@ -59,5 +68,9 @@ class BiomeMapper(val random:Random, private val width:Int, private val height:I
         val ary = noise.createTiledArray(width, height)
         val map = ary.map{it.toList()}
         return map
+    }
+
+    override fun applyFilter(value: Graph<WorldPolygonModel>) {
+        map(value)
     }
 }

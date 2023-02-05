@@ -3,7 +3,6 @@ package com.pixelatedmind.game.tinyuniverse.generation.world
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiEdge
-import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraph
 import java.util.*
 
 
@@ -31,11 +30,11 @@ class QuadrilateralLineInterpolaterImpl(val random : Random) :LineInterpolator {
         this.amplitude = amp
     }
 
-    override fun interpolate(edge: DelaunayVoronoiEdge, lineComplexity:Float, lineSmoothness:Float): List<Vector2> {
+    override fun interpolate(edge: DelaunayVoronoiEdge, lineResolution:Float, lineSmoothness:Float): List<Vector2> {
         if(edge.voronoiN2!=null && edge.voronoiN1!=null) {
             val pointList = mutableListOf<Vector2>()
 
-            val tempMaxDepth = (maxDepth * lineComplexity).toInt()
+            val tempMaxDepth = (maxDepth * lineResolution).toInt()
             val tempInterpolation = maxInterpolation * (1-lineSmoothness)
 
             pointList.add(edge.voronoiN1!!)

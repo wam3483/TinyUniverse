@@ -1,10 +1,11 @@
 package com.pixelatedmind.game.tinyuniverse.generation.world.mapper
 
+import com.pixelatedmind.game.tinyuniverse.generation.ModelFilter
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 import com.pixelatedmind.game.tinyuniverse.graph.Graph
 
-class WaterlineEdgeMapper {
+class WaterlineEdgeMutator : ModelFilter<Graph<WorldPolygonModel>> {
     fun map(graph : Graph<WorldPolygonModel>){
         graph.getVertices().filter{it.biome==Biome.Water}.forEach{worldModel->
             worldModel.borderEdges.forEach{edge->
@@ -14,5 +15,9 @@ class WaterlineEdgeMapper {
                 }
             }
         }
+    }
+
+    override fun applyFilter(value: Graph<WorldPolygonModel>) {
+        map(value)
     }
 }

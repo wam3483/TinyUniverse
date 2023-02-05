@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Vector2
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiEdge
 
 class NullLineInterpolator : LineInterpolator {
-    override fun interpolate(edge: DelaunayVoronoiEdge, lineComplexity: Float, lineSmoothness: Float): List<Vector2> {
+    override fun interpolate(edge: DelaunayVoronoiEdge, lineResolution: Float, lineSmoothness: Float): List<Vector2> {
         val result = mutableListOf<Vector2>()
         if(edge.voronoiN1!=null){
             result.add(edge.voronoiN1!!)

@@ -10,11 +10,10 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.generation.world.*
-import com.pixelatedmind.game.tinyuniverse.generation.world.mapper.DelaunayVoronoiGraphWorldModelMapper
+import com.pixelatedmind.game.tinyuniverse.generation.world.mapper.WorldPolygonModelGraphMapper
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldModel
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraph
@@ -62,7 +61,7 @@ class WordGeneratorViewer : ApplicationAdapter() {
     fun reinit(){
         var seed = randomGen.nextLong()
 //        seed = 1412840536380701127 //<small path for waterline
-//        seed = 254921089064146843 //<-- nice looking world
+        seed = 254921089064146843 //<-- nice looking world
         println("seed = "+seed)
         random = Random(seed)
 
@@ -95,6 +94,9 @@ class WordGeneratorViewer : ApplicationAdapter() {
     }
 
     fun generateWorldModelGraph() : Graph<WorldPolygonModel> {
+        val lineSeed = random.nextLong()
+        val lineRandom = Random(lineSeed)
+        println("lineseed = "+lineSeed)
         val graphBuilder = DelaunayVoronoiGraphBuilder()
         val pointCloudW = 500
         val pointCloudH = 500
@@ -103,11 +105,11 @@ class WordGeneratorViewer : ApplicationAdapter() {
         repeat(iterations) {
             dvGraph = graphBuilder.buildDelaunayVoronoiGraph(dvGraph.getCenterOfVoronoiSites())
         }
-        val lineRandom = Random(random.nextLong())
+//        val lineRandom = Random(random.nextLong())
 //        val lineInterpolator = NullLineInterpolator()
         val lineInterpolator = QuadrilateralLineInterpolaterImpl(lineRandom)
         val bitmap = landmassBitmap(random.nextInt(), pointCloudW, pointCloudH, .5)
-        val worldModelGraphMapper = DelaunayVoronoiGraphWorldModelMapper(lineInterpolator,bitmap, random)
+        val worldModelGraphMapper = WorldPolygonModelGraphMapper(lineInterpolator, bitmap, random)
         val graph = worldModelGraphMapper.map(dvGraph)
         return graph
     }
