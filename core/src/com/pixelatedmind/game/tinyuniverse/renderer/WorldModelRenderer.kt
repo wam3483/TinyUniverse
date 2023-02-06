@@ -14,6 +14,7 @@ class WorldModelRenderer(val shapeDrawer: ShapeDrawer, val model: WorldModel, va
     private val renderModels : List<WorldPolygonRenderer>
     private val distinctEdges : List<WorldPolygonModel.Edge>
     private val waterlinePaths : MutableList<Array<Vector2>>
+    private val lakelinePaths : MutableList<Array<Vector2>>
 
     val bitmap = BitmapFont()
     init {
@@ -25,6 +26,7 @@ class WorldModelRenderer(val shapeDrawer: ShapeDrawer, val model: WorldModel, va
         distinctEdges = model.cellGraph.getVertices().map{it.borderEdges}.flatten().distinct()
 
         waterlinePaths = mutableListOf()
+        lakelinePaths = mutableListOf()
         initWaterlinePaths()
     }
 
@@ -111,10 +113,17 @@ class WorldModelRenderer(val shapeDrawer: ShapeDrawer, val model: WorldModel, va
     fun initWaterlinePaths(){
         val waterEdges = distinctEdges.filter{it.edgeType == WorldPolygonModel.EdgeType.Waterline}.toMutableList()
 
+        val lakeEdges = distinctEdges.filter{it.edgeType == WorldPolygonModel.EdgeType.Lakeline }.toMutableList()
+
         while(waterEdges.isNotEmpty()){
             val currentEdge = waterEdges.first()
             val ary = locateLastPath(currentEdge, waterEdges)
             waterlinePaths.add(ary)
+        }
+        while(lakeEdges.isNotEmpty()){
+            val currentEdge = lakeEdges.first()
+            val ary = locateLastPath(currentEdge, lakeEdges)
+            lakelinePaths.add(ary)
         }
     }
 
@@ -137,6 +146,11 @@ class WorldModelRenderer(val shapeDrawer: ShapeDrawer, val model: WorldModel, va
 //            shapeDrawer.filledCircle(it.last(), 1f)
 //            shapeDrawer.setColor(Color.BLACK)
 //            bitmap.draw(shapeDrawer.batch, it.last().toString()+" "+it.size.toString(), it.last().x, it.last().y)
+        }
+
+        lakelinePaths.forEach{
+            shapeDrawer.setColor(renderConfig.getColorFor(WorldPolygonModel.EdgeType.Lakeline))
+            shapeDrawer.path(it, renderConfig.waterlineEdgeThickness, JoinType.SMOOTH, true)
         }
         shapeDrawer.batch.end()
     }

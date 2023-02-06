@@ -17,13 +17,18 @@ class WorldPolygonModelGraphMapper(val borderNoise: LineInterpolator, val landma
         val assignWaterAndLand = WaterAssignmentMutator(landmassBitmap)
         val addNoiseToEdges = WorldPolygonNoisyEdgeMutator(borderNoise)
         val assignBiomesToLand = BiomeAssignmentMutator(random,400,400)
+        val lakeAssignmentMutator = LakeAssignmentMutator( .15f, 1f)
         val findAndAssignWaterlines = WaterlineEdgeMutator()
+        val riverMutator = RiverMutator()
+
 
         ModelFilterExecutor(worldModelGraph)
                 .applyFilter(assignWaterAndLand)
                 .applyFilter(assignBiomesToLand)
+                .applyFilter(lakeAssignmentMutator)
                 .applyFilter(addNoiseToEdges)
                 .applyFilter(findAndAssignWaterlines)
+                .applyFilter(riverMutator)
 
         return worldModelGraph
     }

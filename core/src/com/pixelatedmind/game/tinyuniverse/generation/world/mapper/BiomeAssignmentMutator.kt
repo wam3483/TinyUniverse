@@ -46,6 +46,23 @@ class BiomeAssignmentMutator(val random:Random, private val width:Int, private v
                 .forEach {
             it.biome = getBiome(it.delaunayVertex.x.toInt(), it.delaunayVertex.y.toInt())
         }
+        graph.getVertices().forEach{
+            it.borderEdges.forEach { edge ->
+                edge.height = getHeight(edge.connectingEdge.voronoiN1!!)
+                edge.humidity = getHumidity(edge.connectingEdge.voronoiN1!!)
+            }
+        }
+    }
+
+    fun getHumidity(v:Vector2):Float{
+        val x1 = v.x.toInt() % humidityMap[0].size
+        val y1 = v.y.toInt() % humidityMap.size
+        return humidityMap[y1][x1].toFloat()
+    }
+    fun getHeight(v:Vector2):Float{
+        val x1 = v.x.toInt() % heightMap[0].size
+        val y1 = v.y.toInt() % heightMap.size
+        return heightMap[y1][x1].toFloat()
     }
 
     fun getBiome(x:Int, y:Int): Biome {

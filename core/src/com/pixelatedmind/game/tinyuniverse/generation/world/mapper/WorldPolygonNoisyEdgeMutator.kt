@@ -5,6 +5,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.world.Edge2
 import com.pixelatedmind.game.tinyuniverse.generation.world.LineInterpolator
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
+import com.pixelatedmind.game.tinyuniverse.generation.world.model.isWater
 import com.pixelatedmind.game.tinyuniverse.graph.Graph
 
 class WorldPolygonNoisyEdgeMutator(private val lineInterpolator: LineInterpolator) : ModelFilter<Graph<WorldPolygonModel>> {
@@ -23,16 +24,25 @@ class WorldPolygonNoisyEdgeMutator(private val lineInterpolator: LineInterpolato
             val graphEdge = it.connectingEdge
             tempEdge.set(graphEdge.voronoiN1!!, graphEdge.voronoiN2!!)
             var edge = voronoiEdgeToEdgeModelMap[tempEdge]
-            if(edge==null){
+            if(edge == null)
+            {
+                edge = it
+                voronoiEdgeToEdgeModelMap[Edge2(tempEdge)] = it
                 var lineResolution = 1f
-                if(key.biome != Biome.Water){
-                    lineResolution = .5f
+                var lineSmoothness: Float
+                if(key.biome == Biome.Lake){
+                    lineSmoothness = .2f
                 }
-                val borderPoints = lineInterpolator.interpolate(graphEdge, lineResolution, 0f)
-                val newEdge = WorldPolygonModel.Edge(borderPoints, it.connectingEdge, it.edgeType, it.thickness, it.adjacentWorldPolygonModels)
-                voronoiEdgeToEdgeModelMap[Edge2(tempEdge)] = newEdge
-                edge = newEdge
+                else if(key.biome == Biome.Water){
+                    lineSmoothness = 0f
+                }
+                else {
+                    lineSmoothness = .5f
+                }
+                val borderPoints = lineInterpolator.interpolate(graphEdge, lineResolution, lineSmoothness)
+                it.borderPoints = borderPoints
             }
+
             edge!!
         }
         key.borderEdges = modelEdges

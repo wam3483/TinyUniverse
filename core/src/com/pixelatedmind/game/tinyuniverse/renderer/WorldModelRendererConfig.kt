@@ -20,11 +20,14 @@ class WorldModelRendererConfig {
 
     private fun initEdgeTypeColorMap(){
         edgeTypeColorMap[WorldPolygonModel.EdgeType.Waterline] = rgb(51,51,90)
+        edgeTypeColorMap[WorldPolygonModel.EdgeType.River] = rgb(34,85,136)
+        edgeTypeColorMap[WorldPolygonModel.EdgeType.Lakeline] = rgb(44,53,177)
     }
 
     private fun initBiomeColorMap(){
 
         biomeColorMap[Biome.Water] = rgb(85,125,166)
+        biomeColorMap[Biome.Lake] = rgb(120,128,220)
 
         biomeColorMap[Biome.Snow] = rgb(240,240,240)
         biomeColorMap[Biome.Tundra] = rgb(221,221,187)

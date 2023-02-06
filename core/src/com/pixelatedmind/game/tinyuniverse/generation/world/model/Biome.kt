@@ -3,6 +3,7 @@ package com.pixelatedmind.game.tinyuniverse.generation.world.model
 enum class Biome {
     Unknown,
     Water,
+    Lake,
     Snow,
     Tundra,
     Bare,
@@ -16,4 +17,8 @@ enum class Biome {
     Grassland,
     TemperateDeciduousForest,
     SubtropicalDesert
+}
+
+fun Biome.isWater() : Boolean{
+    return this == Biome.Water || this == Biome.Lake
 }

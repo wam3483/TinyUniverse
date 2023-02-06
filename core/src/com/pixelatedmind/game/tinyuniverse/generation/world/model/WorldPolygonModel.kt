@@ -25,12 +25,15 @@ class WorldPolygonModel(var borderEdges: List<Edge>, var biome: Biome, val delau
         }
         return result.distinct()
     }
-    class Edge(val borderPoints:List<Vector2>, val connectingEdge: DelaunayVoronoiEdge, var edgeType: EdgeType, val thickness:Float,
+    class Edge(var borderPoints:List<Vector2>, val connectingEdge: DelaunayVoronoiEdge, var edgeType: EdgeType, val thickness:Float,
                val  adjacentWorldPolygonModels : MutableList<WorldPolygonModel>){
+        var height : Float = 0f
+        var humidity : Float = 0f
     }
     enum class EdgeType{
         None,
         Waterline,
+        Lakeline,
         River,
         Crack
     }

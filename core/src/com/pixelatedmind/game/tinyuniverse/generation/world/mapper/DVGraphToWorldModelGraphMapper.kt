@@ -2,7 +2,6 @@ package com.pixelatedmind.game.tinyuniverse.generation.world.mapper
 
 import com.badlogic.gdx.math.Vector2
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
-import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonBiomeModel
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 import com.pixelatedmind.game.tinyuniverse.graph.AdjacencyGraphImpl
 import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiEdge
