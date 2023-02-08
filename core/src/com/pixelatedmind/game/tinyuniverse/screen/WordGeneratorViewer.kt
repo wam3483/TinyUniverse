@@ -43,6 +43,8 @@ class WordGeneratorViewer : ApplicationAdapter() {
     lateinit var worldRenderer : WorldModelRenderer
 
     val randomGen = Random()
+
+
     override fun create() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
