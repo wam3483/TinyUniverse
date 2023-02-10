@@ -28,6 +28,8 @@ allprojects {
         aiVersion = '1.8.2'
         gdxControllersVersion = '2.2.1'
         shapedrawerVersion = '2.5.0'
+        h2dVersion = '0.1.1'
+        artemisVersion='2.3.0'
     }
 
     repositories {

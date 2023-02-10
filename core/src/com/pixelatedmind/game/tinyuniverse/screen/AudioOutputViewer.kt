@@ -10,27 +10,25 @@ import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.generation.music.*
-import com.pixelatedmind.game.tinyuniverse.generation.music.filter.HighLowPassFilter
-import com.pixelatedmind.game.tinyuniverse.generation.music.filter.PassType
-import com.pixelatedmind.game.tinyuniverse.generation.music.patch.TestPatch
-import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.*
+import com.pixelatedmind.game.tinyuniverse.generation.music.patch.InteractivePatch
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.NoteGeneratorKeyboardProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
+import com.pixelatedmind.game.tinyuniverse.screen.synthui.Oscillator
+import com.pixelatedmind.game.tinyuniverse.screen.synthui.SynthUIBuilder
 import space.earlygrey.shapedrawer.ShapeDrawer
 
 class AudioOutputViewer() : ApplicationAdapter() {
+    lateinit var synthUI : SynthUIBuilder
+    lateinit var stage : Stage
+    lateinit var patch : InteractivePatch
 
     lateinit var audioDevice : AudioDevice
     lateinit var musicPlayer : MusicManager
-    lateinit var floatInputStreamReader: FloatInputStreamReader
-
-    lateinit var interpolatedWaveform : WaveformInterpolator
-    lateinit var sineWavePitched : AbstractShapeWaveform
 
     lateinit var camera : OrthographicCamera
 
@@ -56,26 +54,61 @@ class AudioOutputViewer() : ApplicationAdapter() {
         drawer = ShapeDrawer(batch, region)
     }
 
-    val interpolationChangePerSecond = .1f
-    override fun render(){
-        val delta = Gdx.graphics.deltaTime * interpolationChangePerSecond
-        interpolatedWaveform.alpha += delta
-//        sineWavePitched.setPhaseShift(sineWavePitched.phaseShift +delta)
-        if(interpolatedWaveform.alpha >1){
-            interpolatedWaveform.alpha = 0f
+    fun initUI(){
+        synthUI = SynthUIBuilder()
+        stage = synthUI.buildUI()
+        synthUI.oscillatorMixChangeListener ={ mixNormValue:Float ->
+            patch.oscillatorMix = mixNormValue
         }
-//        if(sineWavePitched.phaseShift>1){
-//            sineWavePitched.phaseShift = 0f
-//        }
-//        sineWavePitched.frequency+=.1f
-//        println(sineWavePitched.phaseShift)
+        synthUI.oscillatorChangeListener = {oscillatorIndex:Int, oscillator:Oscillator->
+            if(oscillatorIndex == 0){
+                patch.oscillator1 = oscillator
+            }
+            else{
+                patch.oscillator2 = oscillator
+            }
+        }
+    }
 
+    override fun create() {
+        patch = InteractivePatch()
+        initUI()
+
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+
+        camera = OrthographicCamera()
+        camera.setToOrtho(false, w, h)
+
+        val zoomInput = ScrollZoomInputProcessor(camera!!)
+        val moveInput = KeyboardCameraMoveProcessor(camera!!)
+
+        additiveNoteGenerator = AdditiveNoteGeneratorImpl(patch)
+        val keyboard = NoteGeneratorKeyboardProcessor(additiveNoteGenerator)
+
+        val multiplex = InputMultiplexer(zoomInput, moveInput, keyboard, stage)
+        Gdx.input.inputProcessor = multiplex
+
+        batch = SpriteBatch()
+        initShapeDrawer()
+
+        val audio = Gdx.audio
+        audioDevice = audio.newAudioDevice(44100,false)
+        musicPlayer = MusicManager(audioDevice, 44100, .1f)
+        musicPlayer.addPlaybackListener { ary->
+            soundOutput = ary
+        }
+        musicPlayer.start(FloatInputStreamReader(additiveNoteGenerator, 44100))
+    }
+
+    override fun render(){
         ScreenUtils.clear(.4f, .4f, .4f, 1f)
         camera.update()
         batch.projectionMatrix = camera!!.combined
 
         drawer.batch.begin()
         drawer.setColor(Color.RED)
+
         val audioBuffer = soundOutput
         if(audioBuffer!=null) {
             val xMult = waveformWidth / audioBuffer.size
@@ -86,7 +119,7 @@ class AudioOutputViewer() : ApplicationAdapter() {
                 val y = value * waveformHeight
                 current.set(x,y)
                 if(last!=null) {
-                    drawer.line(last, current)
+                    drawer.line(last, current, 5f)
                 }else{
                     last = Vector2()
                 }
@@ -94,58 +127,8 @@ class AudioOutputViewer() : ApplicationAdapter() {
             }
         }
         drawer.batch.end()
-    }
 
-    fun newPatch() : FloatInputStream{
-        return SawtoothWaveform(1f)
-    }
-
-    override fun create() {
-        val w = Gdx.graphics.width.toFloat()
-        val h = Gdx.graphics.height.toFloat()
-
-        camera = OrthographicCamera()
-        camera.setToOrtho(false, w, h)
-
-        val zoomInput = ScrollZoomInputProcessor(camera!!)
-        val moveInput = KeyboardCameraMoveProcessor(camera!!)
-
-        val patch = TestPatch()
-        additiveNoteGenerator = AdditiveNoteGeneratorImpl(patch)
-        val keyboard = NoteGeneratorKeyboardProcessor(additiveNoteGenerator)
-
-        val multiplex = InputMultiplexer(zoomInput, moveInput, keyboard)
-        Gdx.input.inputProcessor = multiplex
-
-        batch = SpriteBatch()
-        initShapeDrawer()
-
-        initInputStream()
-
-        val audio = Gdx.audio
-        audioDevice = audio.newAudioDevice(44100,false)
-        musicPlayer = MusicManager(audioDevice, 44100, .2f)
-        musicPlayer.addPlaybackListener { ary->
-            soundOutput = ary
-        }
-        musicPlayer.start(FloatInputStreamReader(additiveNoteGenerator, 44100))
-
-        //musicPlayer.start(floatInputStreamReader)
-    }
-
-    private fun initInputStream(){
-        val sineWave = SineWaveform(150f,1f)
-        sineWavePitched = SineWaveform(152f,1f, .0f)
-        val triangleWave = TriangleWaveForm(1f, 100f)
-        val niceSoundingInterpolation = WaveformInterpolator(sineWave, triangleWave, .9f, Interpolation.linear)
-
-        val sawtoothWaveform = SawtoothWaveform(1f, 261f)
-        val squareWaveform = SquareWaveform(.5f, 100f)
-        interpolatedWaveform = WaveformInterpolator(sineWave, triangleWave, 1f, Interpolation.linear)
-        val additiveWaveform = AdditiveWaveform(listOf(
-                sineWave,
-                PhaseShiftWaveformDecorator(sineWavePitched, .53f)))
-        val lowpassFilter = HighLowPassFilterInputStream(HighLowPassFilter(sawtoothWaveform.frequency*.5f, 44100, PassType.Low), sawtoothWaveform)
-        floatInputStreamReader = FloatInputStreamReader(sawtoothWaveform, 44100)
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
     }
 }

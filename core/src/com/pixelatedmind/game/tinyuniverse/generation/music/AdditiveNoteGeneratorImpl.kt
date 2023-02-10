@@ -23,6 +23,7 @@ class AdditiveNoteGeneratorImpl(val inputStreamFactory : FloatInputStreamFactory
 
     override fun read(timeInSeconds: Float): Float {
         additiveWaveform.waveForms = streams.values.toMutableList()
+        additiveWaveform.weights = MutableList(streams.values.size) { 1f/streams.values.size }
         return additiveWaveform.read(timeInSeconds)
     }
 

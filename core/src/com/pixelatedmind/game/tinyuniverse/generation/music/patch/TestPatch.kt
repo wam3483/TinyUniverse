@@ -15,7 +15,11 @@ class TestPatch : FloatInputStreamFactory {
         val triangleWave = TriangleWaveForm( frequency)
         val niceSoundingInterpolation = WaveformInterpolator(sineWave, triangleWave, .9f, Interpolation.linear)
 
-        return HighLowPassFilterInputStream(HighLowPassFilter(.96f*frequency,44100, PassType.High),sineWave)
+        val pulse = SquareWaveform(frequency, pulseWidth = .5f)
+        val lowPass = HighLowPassFilterInputStream(HighLowPassFilter(.2f*frequency,44100, PassType.Low),pulse)
+//        return lowPass
+        val volumeWave = VolumeModulationWaveformDecorator(lowPass, 2f)
+        return volumeWave
 //        return niceSoundingInterpolation
     }
 }

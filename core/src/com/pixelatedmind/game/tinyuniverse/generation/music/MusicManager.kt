@@ -32,7 +32,6 @@ class MusicManager(val audioDevice : AudioDevice, val samplingRate : Int, val pl
                     input!!.read(buffer,0,buffer.size)
                     audioPlaybackListener.forEach{it.invoke(buffer)}
                     audioDevice.writeSamples(buffer,0,buffer.size)
-                    println("wrote samples!")
                 }
             }
         }
