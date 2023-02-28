@@ -38,6 +38,7 @@ class AsyncAudioDevice(samplingRate : Float, sampleSizeInBits : Int, channels : 
             i++
         }
         val bytes = ByteArray(numSamples * 2)
+        byteBuffer.rewind()
         byteBuffer.get(bytes)
         sourceDataLine.write(bytes, offset, numSamples)
     }

@@ -4,23 +4,30 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.FloatInputStream
 import kotlin.math.sqrt
 
 class HighLowPassFilter(var frequency : Float, var sampleRate:Int, var passType: PassType,
-                        val resonance : Float = sqrt(2.0).toFloat()) {
+                        resonanceInput : Float = 1f) {
     private var c : Float = 0f
     private var a1 : Float = 0f
     private var a2 : Float = 0f
     private var a3 : Float = 0f
     private var b1 : Float = 0f
     private var b2 : Float = 0f
+    private var resonance : Float = 0f
     private val inputHistory = floatArrayOf(0f, 0f)
     private val outputHistory = floatArrayOf(0f, 0f, 0f)
 
     init{
+        setResonance(resonanceInput)
         initParams()
     }
 
     @JvmName("setFrequency1")
     fun setFrequency(frequency : Float){
         this.frequency = frequency
+        initParams()
+    }
+
+    fun setResonance(resonanceNormalized : Float){
+        this.resonance = sqrt(2.0).toFloat() * resonanceNormalized
         initParams()
     }
 

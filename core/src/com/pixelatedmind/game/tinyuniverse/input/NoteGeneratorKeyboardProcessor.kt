@@ -2,6 +2,7 @@ package com.pixelatedmind.game.tinyuniverse.input
 
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
+import com.pixelatedmind.game.tinyuniverse.generation.music.Note
 import com.pixelatedmind.game.tinyuniverse.generation.music.NoteGenerator
 import com.pixelatedmind.game.tinyuniverse.generation.music.Notes
 
@@ -11,12 +12,37 @@ class NoteGeneratorKeyboardProcessor(private val noteGenerator : NoteGenerator) 
     private val keycodeToNoteId = mutableMapOf<Int, String>()
     private val notes = Notes()
 
+    fun setOctave(octave : Int){
+        keycodeToFrequency[Input.Keys.Q] = notes.getNote(Note.C,octave)
+        keycodeToFrequency[Input.Keys.W] = notes.getNote(Note.CSharp,octave)
+        keycodeToFrequency[Input.Keys.E] = notes.getNote(Note.D,octave)
+        keycodeToFrequency[Input.Keys.R] = notes.getNote(Note.DSharp,octave)
+        keycodeToFrequency[Input.Keys.T] = notes.getNote(Note.E,octave)
+        keycodeToFrequency[Input.Keys.Y] = notes.getNote(Note.F,octave)
+        keycodeToFrequency[Input.Keys.U] = notes.getNote(Note.FSharp,octave)
+        keycodeToFrequency[Input.Keys.I] = notes.getNote(Note.G,octave)
+        keycodeToFrequency[Input.Keys.O] = notes.getNote(Note.GSharp,octave)
+        keycodeToFrequency[Input.Keys.P] = notes.getNote(Note.A,octave)
+        keycodeToFrequency[Input.Keys.LEFT_BRACKET] = notes.getNote(Note.ASharp,octave)
+        keycodeToFrequency[Input.Keys.RIGHT_BRACKET] = notes.getNote(Note.B,octave)
+    }
+
     init {
-        keycodeToFrequency[Input.Keys.Z] = notes.midi[60]
-        keycodeToFrequency[Input.Keys.X] = notes.midi[62]
-        keycodeToFrequency[Input.Keys.C] = notes.midi[64]
-        keycodeToFrequency[Input.Keys.V] = notes.midi[65]
-        keycodeToFrequency[Input.Keys.B] = notes.midi[67]
+        setOctave(4)
+    }
+
+    override fun keyTyped(character: Char): Boolean {
+        if(character.isDigit()){
+            var numValue = Character.getNumericValue(character)
+            if(numValue<10){
+                if(numValue == 0){
+                    numValue = 10
+                }
+                setOctave(numValue)
+                return true
+            }
+        }
+        return super.keyTyped(character)
     }
 
     override fun keyDown(keycode: Int): Boolean {
@@ -24,6 +50,7 @@ class NoteGeneratorKeyboardProcessor(private val noteGenerator : NoteGenerator) 
         if(frequency != null){
             val noteId = noteGenerator.startNote(frequency)
             keycodeToNoteId[keycode] = noteId
+            return true
         }
         return super.keyDown(keycode)
     }
@@ -34,7 +61,6 @@ class NoteGeneratorKeyboardProcessor(private val noteGenerator : NoteGenerator) 
             noteGenerator.stopNote(id)
             keycodeToNoteId[keycode] = id
         }
-        keycodeToNoteId.remove(keycode)
-        return super.keyUp(keycode)
+        return keycodeToNoteId.remove(keycode)!= null
     }
 }

@@ -2,7 +2,7 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.waveform
 
 import com.pixelatedmind.game.tinyuniverse.generation.music.FloatInputStream
 
-class AdditiveWaveform(var waveForms : List<FloatInputStream> = listOf(), var weights : List<Float> = listOf()) : FloatInputStream {
+class WeightedInputStreamDecoratorImpl(var waveForms : List<FloatInputStream> = listOf(), var weights : List<Float> = listOf()) : FloatInputStream {
     var toggle : Boolean = false
     override fun read(timeInSeconds: Float): Float {
         toggle = !toggle
@@ -12,10 +12,15 @@ class AdditiveWaveform(var waveForms : List<FloatInputStream> = listOf(), var we
         }
         var result = 0f
         waveForms.forEachIndexed{index, stream ->
-            val weight = weights[index]
-            val weightedValue = (stream.read(timeInSeconds) * weight)
+            var weightedValue =
+                if(weights.any()){
+                    val weight = weights[index]
+                    stream.read(timeInSeconds) * weight
+                }else{
+                    stream.read(timeInSeconds)
+                }
             result += weightedValue
         }
-        return result
+        return 1f.coerceAtMost((-1f).coerceAtLeast(result))
     }
 }

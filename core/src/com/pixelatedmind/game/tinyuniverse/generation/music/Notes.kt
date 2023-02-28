@@ -1,7 +1,6 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music
 
 class Notes {
-
 //    MIDI                   MIDI                   MIDI
 //    Note     Frequency      Note   Frequency       Note   Frequency
 //    C1  0    8.1757989156    12    16.3515978313    24    32.7031956626
@@ -62,6 +61,67 @@ class Notes {
 
 
     val midi = FloatArray(127)
+
+    private fun getSemitoneIndex(note : Note) : Int{
+        return when(note){
+            Note.C->0
+            Note.CSharp->1
+            Note.D->2
+            Note.DSharp->3
+            Note.E->4
+            Note.F->5
+            Note.FSharp->6
+            Note.G->7
+            Note.GSharp->8
+            Note.A->9
+            Note.ASharp->10
+            Note.B->11
+            else -> -1
+        }
+    }
+
+    fun getOctaveIndex(octave: Int) : Int{
+        return 12 * (octave-1)
+    }
+
+    fun increaseFrequencyBySemitones(freq : Float, semitoneOffset : Int) : Float{
+        var index = getMidiTableIndexFor(freq) + semitoneOffset
+        if(index >= midi.size){
+            return midi[midi.size-1]
+        }
+        if(index<0){
+            return midi[0]
+        }
+        return midi[index]
+    }
+
+    fun getMidiTableIndexFor(freq : Float) : Int{
+        val index = midi.binarySearch(freq)
+        if(index > midi.size-1){
+            return midi.size-1
+        }else if(index < 0){
+            return (-index) - 1
+        }
+        return index
+    }
+
+    fun getOctave(octave : Int) : List<Float> {
+        val octaveIndex = getOctaveIndex(octave)
+        val list = mutableListOf<Float>()
+        var index = octaveIndex
+        while(list.size < 12){
+            list.add(midi[index])
+            ++index
+        }
+        return list
+    }
+
+    fun getNote(note : Note, octave : Int) : Float{
+        val octaveIndex = getOctaveIndex(octave)
+        val semitoneIndex = getSemitoneIndex(note)
+        val midiIndex = octaveIndex + semitoneIndex
+        return midi[midiIndex]
+    }
 
     init{
         val a = 440
