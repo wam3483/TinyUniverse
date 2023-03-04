@@ -43,7 +43,7 @@ class InteractivePatch : EnvelopeFactory {
         return when(oscillator){
             Oscillator.Sine -> SineWaveform(ConstantValue(frequency))
             Oscillator.Saw->SawtoothWaveform(ConstantValue(frequency))
-            Oscillator.Pulse->SquareWaveform(ConstantValue(frequency),pulseWidth = NormalizedValueStream(SineWaveform(ConstantValue(.05f)),.05f, .95f))
+            Oscillator.Pulse->SquareWaveform(ConstantValue(frequency))
             Oscillator.Triangle->TriangleWaveForm(ConstantValue(frequency))
         }
     }

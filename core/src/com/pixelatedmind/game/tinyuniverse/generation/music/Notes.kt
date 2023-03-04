@@ -62,7 +62,7 @@ class Notes {
 
     val midi = FloatArray(127)
 
-    private fun getSemitoneIndex(note : Note) : Int{
+    fun getSemitoneIndex(note : Note) : Int{
         return when(note){
             Note.C->0
             Note.CSharp->1
@@ -116,11 +116,15 @@ class Notes {
         return list
     }
 
-    fun getNote(note : Note, octave : Int) : Float{
+    fun getNoteMidiIndex(note : Note, octave : Int) : Int{
         val octaveIndex = getOctaveIndex(octave)
         val semitoneIndex = getSemitoneIndex(note)
         val midiIndex = octaveIndex + semitoneIndex
-        return midi[midiIndex]
+        return midiIndex
+    }
+
+    fun getNote(note : Note, octave : Int) : Float{
+        return midi[getNoteMidiIndex(note,octave)]
     }
 
     init{

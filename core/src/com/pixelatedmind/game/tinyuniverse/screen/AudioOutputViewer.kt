@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.generation.music.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.PassType
 import com.pixelatedmind.game.tinyuniverse.generation.music.patch.ChurchOrgan
+import com.pixelatedmind.game.tinyuniverse.generation.music.patch.DramaticSquare
 import com.pixelatedmind.game.tinyuniverse.generation.music.patch.InteractivePatch
 import com.pixelatedmind.game.tinyuniverse.generation.music.patch.KickDrum
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.EuclideanRhythmGenerator
@@ -101,14 +102,14 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
     override fun create() {
         val songModel = SongBuilder().newSong(
             mapOf(
-                "kickdrum" to EuclideanRhythmGenerator().getBeats(13,23),
-                "organ" to EuclideanRhythmGenerator().getBeats(7,23)
+                "kickdrum" to EuclideanRhythmGenerator().getBeats(13,23, 1),
+                "organ" to EuclideanRhythmGenerator().getBeats(7,23, 1)
             )
         )
         val songStream = SongStream(songModel, InstrumentRepositoryImpl(
                 mapOf(
                     "kickdrum" to KickDrum(1f),
-                    "organ" to ChurchOrgan(1f)
+                    "organ" to DramaticSquare(-.5f)
                 )
             )
         )
@@ -140,7 +141,7 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         val churchOrganPatch = ChurchOrgan(.4f)
         val kickdrum = KickDrum(1f)
 //        val synthWars = SongStream.synthWars(churchOrganPatch, 5)
-        val additiveNoteGenerator = AdditiveNoteGenerator(kickdrum)
+        val additiveNoteGenerator = AdditiveNoteGenerator(patch)
 
         var stream : FloatInputStream = additiveNoteGenerator
         stream = songStream

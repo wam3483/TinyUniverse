@@ -9,7 +9,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.Instrumen
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.NoteTone
 import java.util.*
 
-class InstrumentStream(val stream : InstrumentStreamModel, val noteFactory : EnvelopeFactory, val timeSignature : TimeSignature) : FloatInputStream {
+class InstrumentStream(val streamModel : InstrumentStreamModel, val noteFactory : EnvelopeFactory, val timeSignature : TimeSignature) : FloatInputStream {
     private var index = -1
 
     private var noteLength : Float = 0f
@@ -28,10 +28,13 @@ class InstrumentStream(val stream : InstrumentStreamModel, val noteFactory : Env
         if(openNote!=null) {
             openNote!!.release()
         }
-        if(index < stream.stream.size) {
-            val currentNote = stream.stream[index]
+        if(index < streamModel.stream.size) {
+            val currentNote = streamModel.stream[index]
             noteLength = timeSignature.getNoteLengthInSeconds(currentNote.noteLength)
             if(currentNote.tone != NoteTone.Rest) {
+                if(!noteMap.containsKey(currentNote.tone)){
+                    println("wut")
+                }
                 val mappedNote = noteMap[currentNote.tone]!!
                 val noteFrequency = noteUtil.getNote(mappedNote, currentNote.octave)
                 val newEnvelope = noteFactory.newEnvelope(noteFrequency)
@@ -70,7 +73,9 @@ class InstrumentStream(val stream : InstrumentStreamModel, val noteFactory : Env
                 NoteTone.DSharp to Note.DSharp,
                 NoteTone.E to Note.E,
                 NoteTone.F to Note.F,
-                NoteTone.FSharp to Note.FSharp
+                NoteTone.FSharp to Note.FSharp,
+                NoteTone.G to Note.G,
+                NoteTone.GSharp to Note.GSharp
         )
         private val noteUtil = Notes()
     }

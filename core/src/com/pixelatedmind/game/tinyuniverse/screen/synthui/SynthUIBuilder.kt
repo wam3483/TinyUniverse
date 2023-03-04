@@ -24,7 +24,7 @@ class SynthUIBuilder {
 
     val twoDecPlacesFormatter = DecimalFormat("#.##")
 
-    private fun createAmpEnvelopeUI(maxValue : Float, skin : Skin,table : Table){
+    private fun createAmpEnvelopeUI(maxValue : Float, skin : Skin,horizGroup : HorizontalGroup){
         val step = 10f
         val attackSlider = Slider(0f, maxValue, step,true, skin)
         val holdSlider = Slider(0f, maxValue, step,true, skin)
@@ -148,7 +148,7 @@ class SynthUIBuilder {
         asdrTable.add(Label("R",skin))
         asdrTable.row()
 
-        table.add(asdrTable).colspan(3)
+        horizGroup.addActor(asdrTable)//.colspan(3)
     }
 
     private fun buildVolumeSlider(skin : Skin, table : Table){
@@ -279,9 +279,15 @@ class SynthUIBuilder {
 
     fun buildUI() : Stage{
         val stage = Stage()
+        val horizStack = HorizontalGroup()
+
         val table = Table()
-        table.setFillParent(true)
-        stage.addActor(table)
+//        table.setFillParent(true)
+
+        horizStack.addActor(table)
+        horizStack.setFillParent(true)
+
+        stage.addActor(horizStack)
 //        table.setDebug(true)
 
         val skin = Skin(Gdx.files.internal("skins/neonui/neon-ui.json"))
@@ -322,7 +328,7 @@ class SynthUIBuilder {
 
         table.add(o1Label)
         table.add(oscillatorDropdown1)
-        createAmpEnvelopeUI(10000f, skin, table)
+        createAmpEnvelopeUI(10000f, skin, horizStack)
         table.row()
         table.add(o2Label)
         table.add(oscillatorDropdown2)

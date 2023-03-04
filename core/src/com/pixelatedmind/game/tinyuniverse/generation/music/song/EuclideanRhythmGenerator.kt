@@ -1,7 +1,7 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music.song
 
 class EuclideanRhythmGenerator() {
-    fun getBeats(beats : Int, timeSteps : Int) : List<Boolean>{
+    fun getBeats(beats : Int, timeSteps : Int, repeatSequence : Int = 0) : List<Boolean>{
         if(beats>timeSteps){
             throw IllegalArgumentException("cannot have more beats than timesteps")
         }
@@ -23,7 +23,14 @@ class EuclideanRhythmGenerator() {
             num2 = offBeats
         }
         euclidGCDRhythm(num1, num2, beatSequence)
-        return beatSequence.flatten()
+        val flattenedSequece = beatSequence.flatten().toMutableList()
+        if(repeatSequence>0) {
+            val origSequence = flattenedSequece.toList()
+            repeat(repeatSequence) {
+                flattenedSequece.addAll(origSequence)
+            }
+        }
+        return flattenedSequece
     }
 
     private fun euclidGCDRhythm(m: Int, k:Int, beatSeq : MutableList<MutableList<Boolean>>){
