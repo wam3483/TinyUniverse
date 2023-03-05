@@ -1,9 +1,8 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music.waveform
 
-import com.pixelatedmind.game.tinyuniverse.generation.music.FloatInputStream
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.NormalizedValue
+import com.pixelatedmind.game.tinyuniverse.generation.music.values.AnimatedValue
 
-class SawtoothWaveform(frequency : NormalizedValue, amplitude : Float=1f, phaseShift : Float = 0f) : AbstractShapeWaveform(frequency, amplitude, phaseShift) {
+class SawtoothWaveform(frequency : AnimatedValue, amplitude : Float=1f, phaseShift : Float = 0f) : AbstractShapeWaveform(frequency, amplitude, phaseShift) {
 
     override fun read(timeInSeconds: Float): Float {
         val freq = frequency.getValue(timeInSeconds)

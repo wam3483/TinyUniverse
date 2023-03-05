@@ -1,5 +1,7 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music
 
+import java.lang.IndexOutOfBoundsException
+
 class Notes {
 //    MIDI                   MIDI                   MIDI
 //    Note     Frequency      Note   Frequency       Note   Frequency
@@ -80,6 +82,8 @@ class Notes {
         }
     }
 
+
+
     fun getOctaveIndex(octave: Int) : Int{
         return 12 * (octave-1)
     }
@@ -93,6 +97,34 @@ class Notes {
             return midi[0]
         }
         return midi[index]
+    }
+
+    fun getNoteBandwidth(frequency : Float) : Float{
+        val index = this.getMidiTableIndexFor(frequency)
+        val semiToneUp = index + 1
+        if(semiToneUp >= midi.size){
+            throw IndexOutOfBoundsException("[${frequency}] Hz is out of range of midi table.")
+        }
+        return midi[semiToneUp] - midi[index]
+    }
+
+    fun getOctaveBandwidth(octave : Int) : Float {
+        val bottomOctaveMidiIndex = octave * 12
+        val topOctaveMidiIndex = bottomOctaveMidiIndex + 12
+
+        val bottomOctaveFreq = midi[bottomOctaveMidiIndex]
+        val topOctaveFreq =
+                if(topOctaveMidiIndex >= midi.size){
+                    bottomOctaveFreq * 2
+                }else{
+                    midi[topOctaveMidiIndex]
+                }
+        return topOctaveFreq - bottomOctaveFreq
+    }
+
+    fun getOctave(freq : Float) : Int{
+        val midiIndex = getMidiTableIndexFor(freq)
+        return midiIndex / 12
     }
 
     fun getMidiTableIndexFor(freq : Float) : Int{

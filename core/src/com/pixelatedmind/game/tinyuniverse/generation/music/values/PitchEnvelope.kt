@@ -2,7 +2,7 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.values
 
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.Envelope
 
-class PitchEnvelope(val envelope : Envelope, val startPitch :Float, val endPitch : Float) : NormalizedValue {
+class PitchEnvelope(val envelope : Envelope, val startPitch :Float, val endPitch : Float) : AnimatedValue {
     val range = Math.abs(endPitch - startPitch)
     fun release(){
         envelope.release()

@@ -1,5 +1,5 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music.values
 
-interface NormalizedValue {
+interface AnimatedValue {
     fun getValue(timeElapsed:Float) : Float
 }

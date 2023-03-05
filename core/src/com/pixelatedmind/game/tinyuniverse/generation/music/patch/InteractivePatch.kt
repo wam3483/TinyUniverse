@@ -4,8 +4,6 @@ import com.badlogic.gdx.math.Interpolation
 import com.pixelatedmind.game.tinyuniverse.generation.music.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.values.ConstantValue
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.InterpolatedNormalValue
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.NormalizedValueStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.*
 import com.pixelatedmind.game.tinyuniverse.screen.synthui.Oscillator
 

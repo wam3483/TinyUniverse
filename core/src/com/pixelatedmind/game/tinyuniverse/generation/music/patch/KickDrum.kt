@@ -3,8 +3,7 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.patch
 import com.badlogic.gdx.math.Interpolation
 import com.pixelatedmind.game.tinyuniverse.generation.music.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.*
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.ConstantValue
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.NormalizedValue
+import com.pixelatedmind.game.tinyuniverse.generation.music.values.AnimatedValue
 import com.pixelatedmind.game.tinyuniverse.generation.music.values.PitchEnvelope
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.VolumeModulationWaveformDecorator
@@ -78,7 +77,7 @@ class KickDrum(val volume : Float) : EnvelopeFactory {
         return offsetFrequency
     }
 
-    private fun getBaseStream(frequency : Float, streamFrequencyValue : NormalizedValue) : FloatInputStream{
+    private fun getBaseStream(frequency : Float, streamFrequencyValue : AnimatedValue) : FloatInputStream{
         var stream : FloatInputStream = SineWaveform(streamFrequencyValue)
 
         val subbass = SubBassInputStream(1f, streamFrequencyValue)

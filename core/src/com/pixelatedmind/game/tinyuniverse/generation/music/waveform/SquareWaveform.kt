@@ -1,10 +1,9 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music.waveform
 
-import com.pixelatedmind.game.tinyuniverse.generation.music.FloatInputStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.values.ConstantValue
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.NormalizedValue
+import com.pixelatedmind.game.tinyuniverse.generation.music.values.AnimatedValue
 
-class SquareWaveform(frequency : NormalizedValue,amplitude : Float=1f, phaseShift : Float = 0f, var pulseWidth : NormalizedValue = ConstantValue(.5f)) :
+class SquareWaveform(frequency : AnimatedValue, amplitude : Float=1f, phaseShift : Float = 0f, var pulseWidth : AnimatedValue = ConstantValue(.5f)) :
         AbstractShapeWaveform(frequency,amplitude, phaseShift) {
 
     override fun read(timeInSeconds: Float): Float {

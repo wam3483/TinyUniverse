@@ -3,7 +3,7 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.patch
 import com.pixelatedmind.game.tinyuniverse.generation.music.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.values.ConstantValue
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.InterpolatedNormalValue
+import com.pixelatedmind.game.tinyuniverse.generation.music.values.AnimatedValueImpl
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.*
 
 class ChurchOrgan(val volume : Float) : EnvelopeFactory {
@@ -28,7 +28,7 @@ class ChurchOrgan(val volume : Float) : EnvelopeFactory {
                 1f)
         val volumeAdjustedStream = VolumeModulationWaveformDecorator(
                 VolumeModulationWaveformDecorator(TimedFloatInputStreamDecorator(lowPassStream), -.5f), volume)
-        val phaseModulation = PhaseModulation(volumeAdjustedStream, frequency, InterpolatedNormalValue(1f))
+        val phaseModulation = PhaseModulation(volumeAdjustedStream, frequency, AnimatedValueImpl(1f))
         return EnvelopeImpl.buildEnvelope(phaseModulation, .05f, .2f, 1f)
     }
 }
