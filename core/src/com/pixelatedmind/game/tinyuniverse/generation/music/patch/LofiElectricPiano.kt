@@ -25,7 +25,7 @@ class LofiElectricPiano: EnvelopeFactory {
 
         val decayDuration = 2f
         val decayAmplitude = .6f
-        val decayInterpolation = Interpolation.linear
+        val decayInterpolation = Interpolation.circleIn
 
         val sustainDuration = 1f
         val sustainAmplitude = 0f
@@ -56,7 +56,11 @@ class LofiElectricPiano: EnvelopeFactory {
         var rootArg = 2.0
         var i = 0
         val result = mutableListOf<Float>()
+        val perfectSquares = listOf(4.0, 9.0, 16.0, 25.0,36.0)
         while(i<count){
+            if(perfectSquares.contains(rootArg)){
+                rootArg++
+            }
             val value = sqrt(rootArg)
             result.add(value.toFloat())
             rootArg++
@@ -93,14 +97,13 @@ class LofiElectricPiano: EnvelopeFactory {
         return WeightedInputStreamDecoratorImpl(streams, weights)
     }
     private fun baseStream(frequency : Float) : FloatInputStream{
-        println("detune freq: "+frequency)
-        val frequencyValue = DetunedNoteValue(frequency, .2f, .25f, Interpolation.linear, 0, false, notes)
+        val frequencyValue = DetunedNoteValue(frequency, .2f, .25f, Interpolation.exp5, 0, false, notes)
         var stream : FloatInputStream = SineWaveform(frequencyValue)
         stream = VolumeModulationWaveformDecorator(stream, -.5f)
         return stream
     }
     override fun newEnvelope(frequency: Float): Envelope {
-        val stream = unisonEffect(frequency, 5,2f)
+        val stream = unisonEffect(frequency, 5,.5f)
         val ampEnvelope = buildAmpEnvelope()
         val result =  AmpEnvelopeStream(ampEnvelope, stream)
         return result
