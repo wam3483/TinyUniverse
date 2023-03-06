@@ -10,6 +10,8 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.values.ConstantValue
 import com.pixelatedmind.game.tinyuniverse.generation.music.values.DetunedNoteValue
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.VolumeModulationWaveformDecorator
+import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.WeightedInputStreamDecoratorImpl
+import java.lang.Math.sqrt
 
 class LofiElectricPiano: EnvelopeFactory {
     val notes = Notes()
@@ -50,11 +52,55 @@ class LofiElectricPiano: EnvelopeFactory {
         return envelope
     }
 
-    override fun newEnvelope(frequency: Float): Envelope {
-        val frequencyValue = DetunedNoteValue(frequency, .2f,1f, Interpolation.linear, -1, notes)
+    private fun generateNormalizedIrrationals(count : Int) : List<Float> {
+        var rootArg = 2.0
+        var i = 0
+        val result = mutableListOf<Float>()
+        while(i<count){
+            val value = sqrt(rootArg)
+            result.add(value.toFloat())
+            rootArg++
+            i++
+        }
+        val normalMult = 1f / result.size
+        return result.map{it * normalMult}
+    }
+    private fun unisonEffect(frequency : Float, numStreams : Int, detunePercent : Float): FloatInputStream{
+        val perVoiceFrequencyMult = generateNormalizedIrrationals(numStreams+1)
+        val detune = mutableListOf<Float>()
+        var i =0
+        var sum = 0f
+        while(i<numStreams){
+            val delta = (perVoiceFrequencyMult[i+1] - perVoiceFrequencyMult[i]) * detunePercent
+            val detuneValue = Math.pow(2.0, delta.toDouble()).toFloat()
+            detune.add(detuneValue)
+            sum += detuneValue
+            i++
+        }
+        sum /= numStreams
+        sum -= 1
+        detune.forEachIndexed{ index, _ ->
+            detune[index] -= sum
+        }
+
+        val streams = detune.map{
+            baseStream(frequency * it)
+        }
+        val weights = mutableListOf<Float>()
+        repeat(numStreams){
+            weights.add(1f/numStreams)
+        }
+        return WeightedInputStreamDecoratorImpl(streams, weights)
+    }
+    private fun baseStream(frequency : Float) : FloatInputStream{
+        println("detune freq: "+frequency)
+        val frequencyValue = DetunedNoteValue(frequency, .2f, .25f, Interpolation.linear, 0, false, notes)
         var stream : FloatInputStream = SineWaveform(frequencyValue)
         stream = VolumeModulationWaveformDecorator(stream, -.5f)
-
+        return stream
+    }
+    override fun newEnvelope(frequency: Float): Envelope {
+        val stream = unisonEffect(frequency, 5,2f)
         val ampEnvelope = buildAmpEnvelope()
         val result =  AmpEnvelopeStream(ampEnvelope, stream)
         return result

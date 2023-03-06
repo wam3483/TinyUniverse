@@ -10,6 +10,7 @@ class DetunedNoteValue(frequency : Float,
                        animationSecs : Float,
                        interpolation : Interpolation = Interpolation.linear,
                        timesToRepeat : Int = -1,
+                       pingPong : Boolean = false,
                        note : Notes) : AnimatedValue {
 
     val interpolatedNormalValue : AnimatedValueImpl
@@ -19,12 +20,20 @@ class DetunedNoteValue(frequency : Float,
         val detunedNote = frequency + noteBandwidth * detunePercent
         val inTuneNote = frequency
         println("detuned: "+detunedNote+" intune="+inTuneNote)
-        interpolatedNormalValue = AnimatedValueImpl(animationSecs, detunedNote, inTuneNote, interpolation, timesToRepeat, true)
+        interpolatedNormalValue = AnimatedValueImpl(animationSecs, detunedNote,
+                inTuneNote, interpolation,
+                timesToRepeat, pingPong)
     }
 
+    var lastTime = 0f
+    val freq = .1f
     override fun getValue(timeElapsed: Float): Float {
         val result = interpolatedNormalValue.getValue(timeElapsed)
-//        println("time="+timeElapsed+" : detuned note ${result}Hz")
+        val passedTime = timeElapsed - lastTime
+        if(passedTime > freq){
+            println("time="+timeElapsed+" : detuned note ${result}Hz")
+            lastTime = timeElapsed
+        }
         return result
     }
 }
