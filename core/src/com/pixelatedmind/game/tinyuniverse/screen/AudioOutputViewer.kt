@@ -140,7 +140,7 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         val electricPiano = LofiElectricPiano()
         val clapPatch = ClapPatch()
 //        val synthWars = SongStream.synthWars(churchOrganPatch, 5)
-        val additiveNoteGenerator = AdditiveNoteGenerator(clapPatch)
+        val additiveNoteGenerator = AdditiveNoteGenerator(electricPiano)
 
         var stream : FloatInputStream = additiveNoteGenerator
 //        stream = songStream

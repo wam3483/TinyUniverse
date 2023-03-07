@@ -60,7 +60,9 @@ class LofiElectricPiano: EnvelopeFactory {
     }
 
     override fun newEnvelope(frequency: Float): Envelope {
-        val stream = UnisonEffect(frequency, this::baseStream,5,.5f)
+        var stream : FloatInputStream = UnisonEffect(frequency, this::baseStream,5,.5f)
+//        stream = ReverbEffect(stream, 44100,1f,.01f,.2f)
+//        stream = VolumeModulationWaveformDecorator(stream, 50f)
         val ampEnvelope = buildAmpEnvelope()
         val result =  AmpEnvelopeStream(ampEnvelope, stream)
         return result

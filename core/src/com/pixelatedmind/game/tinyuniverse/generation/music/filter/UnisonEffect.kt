@@ -9,7 +9,7 @@ class UnisonEffect(val frequency : Float,
                     numVoices : Int,
                     detunePercent:Float) : FloatInputStream {
 
-    private val unisonStream : FloatInputStream = unisonEffect(frequency, numVoices,detunePercent)
+    private val unisonStream : FloatInputStream = unisonEffect(frequency, numVoices, detunePercent)
 
     private fun generateNormalizedIrrationals(count : Int) : List<Float> {
         var rootArg = 2.0
