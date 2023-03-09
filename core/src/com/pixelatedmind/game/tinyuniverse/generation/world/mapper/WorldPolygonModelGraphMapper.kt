@@ -1,11 +1,10 @@
 package com.pixelatedmind.game.tinyuniverse.generation.world.mapper
 
-import com.badlogic.gdx.math.MathUtils.random
 import com.pixelatedmind.game.tinyuniverse.generation.ModelFilterExecutor
 import com.pixelatedmind.game.tinyuniverse.generation.world.LineInterpolator
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 import com.pixelatedmind.game.tinyuniverse.graph.*
-import com.pixelatedmind.game.tinyuniverse.maps.tiled.Bitmap
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
 import java.util.*
 
 class WorldPolygonModelGraphMapper(val borderNoise: LineInterpolator, val landmassBitmap : Bitmap, val random : Random) {

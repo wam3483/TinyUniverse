@@ -1,4 +1,4 @@
-package com.pixelatedmind.game.tinyuniverse.maps.tiled
+package com.pixelatedmind.game.tinyuniverse.datastructure
 
 interface Bitmap {
     fun getWidth():Int

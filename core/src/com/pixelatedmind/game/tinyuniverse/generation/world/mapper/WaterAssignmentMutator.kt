@@ -4,7 +4,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.ModelFilter
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.Biome
 import com.pixelatedmind.game.tinyuniverse.generation.world.model.WorldPolygonModel
 import com.pixelatedmind.game.tinyuniverse.graph.Graph
-import com.pixelatedmind.game.tinyuniverse.maps.tiled.Bitmap
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
 
 /***
  * Assigns voronoi regions as either water biome, or unknown by querying a bitmap for true/false values respectively.

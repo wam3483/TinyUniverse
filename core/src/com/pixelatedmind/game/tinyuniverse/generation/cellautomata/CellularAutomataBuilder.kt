@@ -8,11 +8,15 @@ class CellularAutomataBuilder {
     private var ruleNumber : Int = 30
     //initial state
     private var initialAutomataState = mutableListOf<Boolean>()
-    private var height : Int = 40
+    private var height : Int = 24
 
     fun setHeight(height : Int) : CellularAutomataBuilder {
         this.height = height
         return this
+    }
+
+    fun getHeight() : Int{
+        return height
     }
 
     fun setInitialState(state : List<Boolean>) : CellularAutomataBuilder{
@@ -31,7 +35,9 @@ class CellularAutomataBuilder {
             throw IllegalStateException("Initial state must have at least 3 elements")
         }
     }
-    fun build(){
+    fun build() : List<List<Boolean>>{
         val patternGen = AutomataPatternGenerator3N(ruleNumber)
+        val result = patternGen.generatePattern2D(initialAutomataState, height)
+        return result
     }
 }

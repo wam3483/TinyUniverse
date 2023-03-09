@@ -26,7 +26,19 @@ class AutomataPatternGenerator3N(outputBits : Int) {
         }
     }
 
-    fun generatePattern(currentState : List<Boolean>, nextStateOutput : MutableList<Boolean> = mutableListOf()) : List<Boolean>{
+    fun generatePattern2D(currentState : List<Boolean>, height : Int) : List<List<Boolean>>{
+        val result = mutableListOf<List<Boolean>>()
+        var patternSeed = currentState
+        result.add(patternSeed)
+        repeat(height-1){
+            val row = generatePattern1D(patternSeed)
+            result.add(row)
+            patternSeed = row
+        }
+        return result
+    }
+
+    fun generatePattern1D(currentState : List<Boolean>, nextStateOutput : MutableList<Boolean> = mutableListOf()) : List<Boolean>{
         var index = 0
         while(index< currentState.size){
             val bitPattern = getAutomataPatternIndex(currentState, index)

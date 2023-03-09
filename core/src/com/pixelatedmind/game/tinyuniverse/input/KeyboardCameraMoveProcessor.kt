@@ -9,7 +9,7 @@ class KeyboardCameraMoveProcessor(val camera : OrthographicCamera, val dx:Float=
         val result = when(character){
             'w'->
                 {
-//                    camera.position.y+= dy
+                    camera.position.y+= dy
                     return true
                 }
             's'->{

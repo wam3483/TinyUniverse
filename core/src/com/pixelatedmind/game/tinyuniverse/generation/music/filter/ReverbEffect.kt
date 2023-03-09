@@ -29,11 +29,11 @@ class ReverbEffect(val stream : FloatInputStream, val sampleRate : Int, val dryW
         val comb3 = combFilter3.filter(timeInSeconds, sample)
         val comb4 = combFilter4.filter(timeInSeconds, sample)
 
-        val combOutput = (comb1 + comb2 + comb3 + comb4)
+        val combOutput = (comb1 + comb2 + comb3 + comb4) / 4
         val dryWetOutput = (1 - dryWetRatio) * sample + dryWetRatio * combOutput
 
-        val allPass1Output = allPassFilter1.filter(timeInSeconds, dryWetOutput) / 6f
-        val allPass2Output = allPassFilter2.filter(timeInSeconds, allPass1Output)/3f
+        val allPass1Output = allPassFilter1.filter(timeInSeconds, dryWetOutput)
+        val allPass2Output = allPassFilter2.filter(timeInSeconds, allPass1Output)
 
 //        println("combOutput = $combOutput dryWet=$dryWetOutput allPass1=$allPass1Output allPass2=$allPass2Output")
 

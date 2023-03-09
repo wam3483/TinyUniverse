@@ -85,7 +85,7 @@ class Notes {
 
 
     fun getOctaveIndex(octave: Int) : Int{
-        return 12 * (octave-1)
+        return 12 * octave
     }
 
     fun increaseFrequencyBySemitones(freq : Float, semitoneOffset : Int) : Float{
@@ -156,7 +156,11 @@ class Notes {
     }
 
     fun getNote(note : Note, octave : Int) : Float{
-        return midi[getNoteMidiIndex(note,octave)]
+        val noteIndex = getNoteMidiIndex(note,octave)
+        if(noteIndex<0 || noteIndex >= midi.size){
+            throw ArrayIndexOutOfBoundsException("[$noteIndex] out of bounds for length ${midi.size}. octave=[$octave], note=[$note]")
+        }
+        return midi[noteIndex]
     }
 
     init{

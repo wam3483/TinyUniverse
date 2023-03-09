@@ -92,7 +92,7 @@ class KickDrum(val volume : Float) : EnvelopeFactory {
         val envelopedPitch = buildPitchEnvelope(frequency)
 
         var stream = getBaseStream(frequency, envelopedPitch)
-        stream = VolumeModulationWaveformDecorator(stream, 0f)
+        stream = VolumeModulationWaveformDecorator(stream, volume)
 
         val complexAmpEnvelope = buildAmpEnvelope()
         val ampEnvelope =  AmpEnvelopeStream(complexAmpEnvelope, stream)

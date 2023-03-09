@@ -5,15 +5,11 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.EnvelopeFactory
 import com.pixelatedmind.game.tinyuniverse.generation.music.FloatInputStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.Notes
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.*
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.AnimatedValueImpl
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.ConstantValue
 import com.pixelatedmind.game.tinyuniverse.generation.music.values.DetunedNoteValue
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.VolumeModulationWaveformDecorator
-import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.WeightedInputStreamDecoratorImpl
-import java.lang.Math.sqrt
 
-class LofiElectricPiano: EnvelopeFactory {
+class ElectricPiano: EnvelopeFactory {
     val notes = Notes()
 
     private fun buildAmpEnvelope() : Envelope {
@@ -55,14 +51,13 @@ class LofiElectricPiano: EnvelopeFactory {
     private fun baseStream(frequency : Float) : FloatInputStream{
         val frequencyValue = DetunedNoteValue(frequency, .2f, .25f, Interpolation.exp5, 0, false, notes)
         var stream : FloatInputStream = SineWaveform(frequencyValue)
-        stream = VolumeModulationWaveformDecorator(stream, -.5f)
+        stream = VolumeModulationWaveformDecorator(stream, 0f)
         return stream
     }
 
     override fun newEnvelope(frequency: Float): Envelope {
         var stream : FloatInputStream = UnisonEffect(frequency, this::baseStream,5,.5f)
-//        stream = ReverbEffect(stream, 44100,1f,.01f,.2f)
-//        stream = VolumeModulationWaveformDecorator(stream, 50f)
+        stream = VolumeModulationWaveformDecorator(stream, -.2f)
         val ampEnvelope = buildAmpEnvelope()
         val result =  AmpEnvelopeStream(ampEnvelope, stream)
         return result

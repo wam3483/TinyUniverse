@@ -16,16 +16,19 @@ import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.generation.music.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.PassType
 import com.pixelatedmind.game.tinyuniverse.generation.music.patch.*
-import com.pixelatedmind.game.tinyuniverse.generation.music.song.EuclideanRhythmGenerator
+import com.pixelatedmind.game.tinyuniverse.generation.music.proc.BassMovingBandRoleImpl
+import com.pixelatedmind.game.tinyuniverse.generation.music.proc.SongBuilder
+import com.pixelatedmind.game.tinyuniverse.generation.music.proc.SongResult
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.InstrumentRepositoryImpl
-import com.pixelatedmind.game.tinyuniverse.generation.music.song.SongBuilder
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.SongStream
+import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.NoteTone
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.NoteGeneratorKeyboardProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
 import com.pixelatedmind.game.tinyuniverse.screen.synthui.Oscillator
 import com.pixelatedmind.game.tinyuniverse.screen.synthui.SynthUIBuilder
 import space.earlygrey.shapedrawer.ShapeDrawer
+import java.util.*
 
 class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAdapter() {
     lateinit var synthUI : SynthUIBuilder
@@ -96,17 +99,32 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         }
     }
 
+    fun buildSong() : SongResult {
+        val builder = SongBuilder()
+        val width = 50
+        val initialState = MutableList(width){false}
+        initialState[width /2] = true
+        initialState[width/2+5] = true
+
+        builder.setScale(4, NoteTone.G, Scale.Major)
+        builder.setPattern(12,30,initialState)
+        builder.rolePatternFinders["electricPiano"] = BassMovingBandRoleImpl(Random())
+        val model = builder.newSong()
+        return model
+    }
+
     override fun create() {
-        val songModel = SongBuilder().newSong(
-            mapOf(
-                "kickdrum" to EuclideanRhythmGenerator().getBeats(13,23, 1),
-                "organ" to EuclideanRhythmGenerator().getBeats(7,23, 1)
-            )
-        )
-        val songStream = SongStream(songModel, InstrumentRepositoryImpl(
+        val generatedSong = buildSong()
+//        val songModel = PercussionBuilder().newSong(
+//            mapOf(
+//                "kickdrum" to EuclideanRhythmGenerator().getBeats(13,23, 1),
+//                "organ" to EuclideanRhythmGenerator().getBeats(7,23, 1)
+//            )
+//        )
+        val songStream = SongStream(generatedSong.songModel, InstrumentRepositoryImpl(
                 mapOf(
-                    "kickdrum" to KickDrum(1f),
-                    "organ" to DramaticSquare(-.5f)
+                    "kickdrum" to KickDrum(-.5f),
+                    "electricPiano" to ElectricPiano()
                 )
             )
         )
@@ -135,16 +153,17 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         musicPlayer.addPlaybackListener { ary->
             soundOutput = ary
         }
+        val bounce = BasketballBounce(-.4f)
         val churchOrganPatch = ChurchOrgan(.4f)
         val kickdrum = KickDrum(1f)
-        val electricPiano = LofiElectricPiano()
+        val electricPiano = ElectricPiano()
         val clapPatch = ClapPatch()
 //        val synthWars = SongStream.synthWars(churchOrganPatch, 5)
         val additiveNoteGenerator = AdditiveNoteGenerator(electricPiano)
 
         var stream : FloatInputStream = additiveNoteGenerator
-//        stream = songStream
-        musicPlayer.start(FloatInputStreamReader(stream, 44100))
+        stream = songStream
+        musicPlayer.start(FloatInputStreamReader(songStream, 44100))
 
         val keyboard = NoteGeneratorKeyboardProcessor(additiveNoteGenerator)
 

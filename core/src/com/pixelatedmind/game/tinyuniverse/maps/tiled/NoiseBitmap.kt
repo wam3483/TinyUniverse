@@ -1,6 +1,8 @@
 package com.pixelatedmind.game.tinyuniverse.maps.tiled
 
-class NoiseBitmap(val noiseMatrix : List<List<Double>>, val trueThreshold:Double) : Bitmap{
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
+
+class NoiseBitmap(val noiseMatrix : List<List<Double>>, val trueThreshold:Double) : Bitmap {
 
     override fun getWidth(): Int {
         return noiseMatrix[0].size

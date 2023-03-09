@@ -21,7 +21,7 @@ import com.pixelatedmind.game.tinyuniverse.graph.DelaunayVoronoiGraphBuilder
 import com.pixelatedmind.game.tinyuniverse.graph.Graph
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
-import com.pixelatedmind.game.tinyuniverse.maps.tiled.Bitmap
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
 import com.pixelatedmind.game.tinyuniverse.maps.tiled.NoiseBitmap
 import com.pixelatedmind.game.tinyuniverse.maps.tiled.TiledBitmapDecorator
 import com.pixelatedmind.game.tinyuniverse.renderer.WorldModelRenderer

@@ -1,6 +1,8 @@
 package com.pixelatedmind.game.tinyuniverse.maps.tiled
 
-class IntAryBitmap : Bitmap{
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
+
+class IntAryBitmap : Bitmap {
     private var ary : Array<IntArray>
     private var isTrueValue : (value:Int)->Boolean
 

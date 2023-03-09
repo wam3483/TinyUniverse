@@ -2,7 +2,7 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.song
 
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.NoteLength
 
-class TimeSignature(val bpm : Float, val bottomTimeSignatureNumber : Int) {
+class TimeSignature(val bpm : Int, val bottomTimeSignatureNumber : Int) {
     private val noteLengths : Map<NoteLength, Float>
     init{
         noteLengths = getNoteLengthInSeconds()
@@ -16,8 +16,16 @@ class TimeSignature(val bpm : Float, val bottomTimeSignatureNumber : Int) {
         return 1 / getBeatsPerSecond()
     }
 
-    fun getNoteLengthInSeconds(noteBeat : NoteLength) : Float{
-        return noteLengths[noteBeat]!!
+    fun getNoteLengthInSeconds(noteBeat : List<NoteLength>) : Float{
+        var length = 0f
+        noteBeat.forEach{
+            length += noteLengths[it]!!
+        }
+        return length
+    }
+
+    fun getOneBeatLength() : NoteLength{
+        return noteLengths.toList().firstOrNull{it.second == 1f}!!.first
     }
 
     private fun getNoteLengthInSeconds() : Map<NoteLength, Float>{

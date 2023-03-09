@@ -25,15 +25,8 @@ class DetunedNoteValue(frequency : Float,
                 timesToRepeat, pingPong)
     }
 
-    var lastTime = 0f
-    val freq = .1f
     override fun getValue(timeElapsed: Float): Float {
         val result = interpolatedNormalValue.getValue(timeElapsed)
-        val passedTime = timeElapsed - lastTime
-        if(passedTime > freq){
-            println("time="+timeElapsed+" : detuned note ${result}Hz")
-            lastTime = timeElapsed
-        }
         return result
     }
 }

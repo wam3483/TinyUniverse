@@ -32,9 +32,6 @@ class InstrumentStream(val streamModel : InstrumentStreamModel, val noteFactory 
             val currentNote = streamModel.stream[index]
             noteLength = timeSignature.getNoteLengthInSeconds(currentNote.noteLength)
             if(currentNote.tone != NoteTone.Rest) {
-                if(!noteMap.containsKey(currentNote.tone)){
-                    println("wut")
-                }
                 val mappedNote = noteMap[currentNote.tone]!!
                 val noteFrequency = noteUtil.getNote(mappedNote, currentNote.octave)
                 val newEnvelope = noteFactory.newEnvelope(noteFrequency)

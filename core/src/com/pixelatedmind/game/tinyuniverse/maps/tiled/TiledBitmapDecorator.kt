@@ -1,5 +1,7 @@
 package com.pixelatedmind.game.tinyuniverse.maps.tiled
 
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
+
 class TiledBitmapDecorator(val bitmap : Bitmap) : Bitmap {
     override fun getWidth(): Int {
         return bitmap.getWidth()

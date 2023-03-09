@@ -2,20 +2,23 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.song
 
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.*
 
-class SongBuilder {
+class PercussionBuilder {
     fun newSong(ryhthm : Map<String, List<Boolean>>) : SongModel {
-        val bpm = 120f*1.2f
+        val bpm = 120
         val timeSigBottom = 4
         val name = ""
         val noteLength = NoteLength.Quarter
-        val drumMapper = ConstantRhythmNoteStreamMapperImpl(NoteModel(4, NoteTone.D, noteLength))
-        val octave = 4
+        val drumMapper = ConstantRhythmNoteStreamMapperImpl(NoteModel(4, NoteTone.D, listOf(noteLength)))
+        val octave = 6
         val instrumentMapper = RhythmNoteStreamMapperImpl(
                 listOf(
-                    listOf(NoteModel(octave, NoteTone.B, NoteLength.Quarter)),
-                    listOf(NoteModel(octave, NoteTone.DSharp, NoteLength.Eigth), NoteModel(octave, NoteTone.G, NoteLength.Eigth), NoteModel(octave, NoteTone.B, NoteLength.Quarter)),
-                    listOf(NoteModel(octave, NoteTone.DSharp, NoteLength.Quarter), NoteModel(octave, NoteTone.G, NoteLength.Quarter)),
-                    listOf(NoteModel(octave, NoteTone.DSharp, NoteLength.Half))
+                    listOf(NoteModel(octave, NoteTone.B, listOf(NoteLength.Quarter))),
+                    listOf(NoteModel(octave, NoteTone.DSharp, listOf(NoteLength.Eigth)),
+                            NoteModel(octave, NoteTone.G, listOf(NoteLength.Eigth)),
+                            NoteModel(octave, NoteTone.B, listOf(NoteLength.Quarter))),
+                    listOf(NoteModel(octave, NoteTone.DSharp, listOf(NoteLength.Quarter)),
+                            NoteModel(octave, NoteTone.G, listOf(NoteLength.Quarter))),
+                    listOf(NoteModel(octave, NoteTone.DSharp, listOf(NoteLength.Half)))
                 ),
                 NoteLength.Quarter, 1)
         val noteStreams =
@@ -36,7 +39,7 @@ class SongBuilder {
         fun map(beats : List<Boolean>) : List<NoteModel>
     }
     class RhythmNoteStreamMapperImpl(val sequence : List<List<NoteModel>>, restDuration : NoteLength, val repeatNoteSequence : Int = 1) : RhythmNoteStreamMapper{
-        private val restNote : NoteModel = NoteModel(0, NoteTone.Rest, restDuration)
+        private val restNote : NoteModel = NoteModel(0, NoteTone.Rest, listOf(restDuration))
         private var index = 0
         init{
 

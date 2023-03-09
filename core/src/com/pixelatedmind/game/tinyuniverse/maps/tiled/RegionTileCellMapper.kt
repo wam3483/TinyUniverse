@@ -3,6 +3,7 @@ package com.pixelatedmind.game.tinyuniverse.maps.tiled
 import com.badlogic.gdx.maps.tiled.TiledMapTile
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
 import com.badlogic.gdx.math.Vector2
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
 
 class RegionTileCellMapper(val bitmap : Bitmap, val autoTile : List<TiledMapTile>) {
     private val autotileBitflagMap = mutableMapOf<Int,Int>()

@@ -1,6 +1,8 @@
 package com.pixelatedmind.game.tinyuniverse.maps.tiled
 
-class SingleValueBitmapImpl(val value : Boolean, val w:Int=1,val h:Int=1) : Bitmap{
+import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
+
+class SingleValueBitmapImpl(val value : Boolean, val w:Int=1,val h:Int=1) : Bitmap {
 
     override fun getWidth(): Int {
         return w
