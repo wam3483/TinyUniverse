@@ -1,11 +1,9 @@
 package com.pixelatedmind.game.tinyuniverse;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.AudioDevice;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.pixelatedmind.game.tinyuniverse.generation.music.AudioDeviceFactory;
-import com.pixelatedmind.game.tinyuniverse.generation.music.CoreAudioDeviceFactory;
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.AudioDeviceFactory;
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.CoreAudioDeviceFactory;
 import com.pixelatedmind.game.tinyuniverse.screen.*;
 //import com.pixelatedmind.game.tinyuniverse.screen.WordGeneratorViewer;
 
@@ -20,8 +18,9 @@ public class DesktopLauncher {
 		config.setBackBufferConfig(0,0,0,1,0,0,3);
 		config.setTitle("TinyUniverse");
 		new Lwjgl3Application(
-				new CellularAutomataViewer(),
+				//new CellularAutomataViewer(),
 //				new AudioOutputViewer(audioFactory),
+				new PiecewiseEditorTest(),
 //				new WordGeneratorViewer(),
 				//new VoronoiGraphViewer(),
 				//new TiledMapRegionViewer(),

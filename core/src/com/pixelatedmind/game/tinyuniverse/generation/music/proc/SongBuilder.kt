@@ -3,14 +3,14 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.proc
 import com.pixelatedmind.game.tinyuniverse.datastructure.Bitmap
 import com.pixelatedmind.game.tinyuniverse.generation.cellautomata.CellularAutomataBuilder
 import com.pixelatedmind.game.tinyuniverse.datastructure.BitmapImpl
-import com.pixelatedmind.game.tinyuniverse.generation.music.Scale
+import com.pixelatedmind.game.tinyuniverse.generation.music.model.Scale
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.InstrumentStreamModel
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.NoteTone
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.SongModel
 
 class SongBuilder {
 
-    val rolePatternFinders = mutableMapOf<String, BandRolePatternFinder>()
+    val rolePatternFinders = mutableListOf<BandRoleModel>()
 
     private val patternCreator = CellularAutomataBuilder()
 
@@ -25,16 +25,11 @@ class SongBuilder {
         patternCreator.setHeight(height)
         patternCreator.setRule(ruleNumber)
         patternCreator.setInitialState(initialState)
-
-        setScale(scale.lowestOctave, scale.rootNote, scale.intervals)
+        setBottomOctave(scale.lowestOctave)
     }
 
-    fun setScale(lowestOctave: Int, rootNote : NoteTone, scale : Scale){
-        setScale(lowestOctave, rootNote, scale.notation.toList())
-    }
-
-    fun setScale(lowestOctave : Int, rootNote : NoteTone, intervals : List<Int>){
-        scale = AutomataScaleMapperImpl(lowestOctave, patternCreator.getHeight(),rootNote, intervals)
+    fun setBottomOctave(lowestOctave : Int){
+        scale = AutomataScaleMapperImpl(lowestOctave, patternCreator.getHeight(), NoteTone.C, Scale.Chromatic)
         automataNoteMapper = PatternNoteSequenceMapper(scale)
     }
 
@@ -42,17 +37,19 @@ class SongBuilder {
         val pattern = patternCreator.build()
         val bitmap = BitmapImpl(pattern, true)
         bitmap.rotate90(true)
-        val roleAutomataPatterns = rolePatternFinders.map{
-            it.key to it.value.find(bitmap)
-        }
 
-        val instrumentStreamModels = roleAutomataPatterns.map{
-            InstrumentStreamModel(it.first, automataNoteMapper.map(it.second))
+        val roleAutomataPatterns = mutableListOf<Pair<BandRoleModel, List<AutomataCell>>>()
+        val instrumentStreamModels = rolePatternFinders.map{
+            val cellPattern = it.patternFinder.find(bitmap)
+            val notes = automataNoteMapper.map(cellPattern)
+
+            roleAutomataPatterns.add(Pair(it, cellPattern))
+            InstrumentStreamModel(it.instrumentName, it.gain, notes)
         }
         val songModel = SongModel("",beatsPerMinute,timeSignatureBottomNumber,instrumentStreamModels)
         return SongResult(songModel, bitmap, roleAutomataPatterns)
     }
 }
-class SongResult(val songModel : SongModel, val fullPattern : Bitmap, val voicePatterns : List<Pair<String, List<AutomataCell>>>){
+class SongResult(val songModel : SongModel, val fullPattern : Bitmap, val voicePatterns : List<Pair<BandRoleModel, List<AutomataCell>>>){
 
 }

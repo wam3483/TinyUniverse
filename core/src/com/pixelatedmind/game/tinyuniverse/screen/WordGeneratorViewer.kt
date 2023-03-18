@@ -61,7 +61,7 @@ class WordGeneratorViewer : ApplicationAdapter() {
     }
 
     fun reinit(){
-        var seed = randomGen.nextLong()
+        var seed = 1944432210214770054//randomGen.nextLong()
 //        seed = 1412840536380701127 //<small path for waterline
 //        seed = 254921089064146843 //<-- nice looking world
         println("seed = "+seed)

@@ -2,8 +2,8 @@ package com.pixelatedmind.game.tinyuniverse.input
 
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
-import com.pixelatedmind.game.tinyuniverse.generation.music.Note
-import com.pixelatedmind.game.tinyuniverse.generation.music.NoteGenerator
+import com.pixelatedmind.game.tinyuniverse.generation.music.model.Note
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.NoteGenerator
 import com.pixelatedmind.game.tinyuniverse.generation.music.Notes
 
 class NoteGeneratorKeyboardProcessor(private val noteGenerator : NoteGenerator) : InputAdapter() {

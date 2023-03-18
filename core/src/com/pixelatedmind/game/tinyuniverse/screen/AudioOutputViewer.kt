@@ -13,15 +13,20 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.ScreenUtils
-import com.pixelatedmind.game.tinyuniverse.generation.music.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.filter.PassType
-import com.pixelatedmind.game.tinyuniverse.generation.music.patch.*
-import com.pixelatedmind.game.tinyuniverse.generation.music.proc.BassMovingBandRoleImpl
+import com.pixelatedmind.game.tinyuniverse.generation.music.proc.BandRoleModel
+import com.pixelatedmind.game.tinyuniverse.generation.music.proc.patternfinder.MovingBandRoleImpl
 import com.pixelatedmind.game.tinyuniverse.generation.music.proc.SongBuilder
 import com.pixelatedmind.game.tinyuniverse.generation.music.proc.SongResult
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.InstrumentRepositoryImpl
+import com.pixelatedmind.game.tinyuniverse.generation.music.model.Scale
 import com.pixelatedmind.game.tinyuniverse.generation.music.song.SongStream
-import com.pixelatedmind.game.tinyuniverse.generation.music.song.model.NoteTone
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.AdditiveNoteGenerator
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.AudioDeviceFactory
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.io.AudioStreamPlayer
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.io.AudioStreamReader
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.patch.*
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatInputStream
 import com.pixelatedmind.game.tinyuniverse.input.KeyboardCameraMoveProcessor
 import com.pixelatedmind.game.tinyuniverse.input.NoteGeneratorKeyboardProcessor
 import com.pixelatedmind.game.tinyuniverse.input.ScrollZoomInputProcessor
@@ -36,7 +41,7 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
     lateinit var patch : InteractivePatch
 
     lateinit var audioDevice : AudioDevice
-    lateinit var musicPlayer : MusicManager
+    lateinit var musicPlayer : AudioStreamPlayer
 
     lateinit var camera : OrthographicCamera
 
@@ -106,9 +111,10 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         initialState[width /2] = true
         initialState[width/2+5] = true
 
-        builder.setScale(4, NoteTone.G, Scale.Major)
+        builder.setBottomOctave(4)
         builder.setPattern(12,30,initialState)
-        builder.rolePatternFinders["electricPiano"] = BassMovingBandRoleImpl(Random())
+        builder.rolePatternFinders.add(BandRoleModel("electricPiano",1f, MovingBandRoleImpl(
+                Scale.Major.notation.toList(),Random())))
         val model = builder.newSong()
         return model
     }
@@ -149,7 +155,7 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         val audioDevice = deviceFactory.newDevice(44100, true)
         //val audio =Gdx.audio
         //audioDevice = audio.newAudioDevice(44100,true)
-        musicPlayer = MusicManager(audioDevice, 44100, 1/16f)
+        musicPlayer = AudioStreamPlayer(audioDevice, 44100, 1/16f)
         musicPlayer.addPlaybackListener { ary->
             soundOutput = ary
         }
@@ -157,13 +163,14 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         val churchOrganPatch = ChurchOrgan(.4f)
         val kickdrum = KickDrum(1f)
         val electricPiano = ElectricPiano()
-        val clapPatch = ClapPatch()
+        val clapPatch = ClapPatch(44100f)
+        val pluckBass = PluckBass()
 //        val synthWars = SongStream.synthWars(churchOrganPatch, 5)
-        val additiveNoteGenerator = AdditiveNoteGenerator(electricPiano)
+        val additiveNoteGenerator = AdditiveNoteGenerator(pluckBass)
 
         var stream : FloatInputStream = additiveNoteGenerator
         stream = songStream
-        musicPlayer.start(FloatInputStreamReader(songStream, 44100))
+        musicPlayer.start(AudioStreamReader(additiveNoteGenerator, 44100))
 
         val keyboard = NoteGeneratorKeyboardProcessor(additiveNoteGenerator)
 

@@ -1,10 +1,9 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music.filter
 
-import com.pixelatedmind.game.tinyuniverse.generation.music.FloatInputStream
-import com.pixelatedmind.game.tinyuniverse.generation.music.values.AnimatedValue
-import com.pixelatedmind.game.tinyuniverse.generation.music.waveform.SineWaveform
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatInputStream
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 
-class SubBassInputStream(normalScale : Float, frequency : AnimatedValue) : FloatInputStream {
+class SubBassInputStream(normalScale : Float, frequency : FloatInputStream) : FloatInputStream {
     private var maxWaveAmplitude : Float = 0f
     private val sineWave = SineWaveform(frequency)
     init{

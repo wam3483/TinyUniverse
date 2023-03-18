@@ -25,7 +25,16 @@ class TimeSignature(val bpm : Int, val bottomTimeSignatureNumber : Int) {
     }
 
     fun getOneBeatLength() : NoteLength{
-        return noteLengths.toList().firstOrNull{it.second == 1f}!!.first
+        return when(bottomTimeSignatureNumber){
+            16 -> NoteLength.Sixtenth
+            8 -> NoteLength.Eigth
+            4 -> NoteLength.Quarter
+            2 -> NoteLength.Half
+            1 -> NoteLength.Whole
+            else ->
+                throw IllegalArgumentException("unhandled bottom time sig")
+        }
+//        return noteLengths.toList().firstOrNull{it.second == 1f}!!.first
     }
 
     private fun getNoteLengthInSeconds() : Map<NoteLength, Float>{

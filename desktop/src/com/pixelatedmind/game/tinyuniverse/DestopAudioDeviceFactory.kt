@@ -1,7 +1,7 @@
 package com.pixelatedmind.game.tinyuniverse
 
 import com.badlogic.gdx.audio.AudioDevice
-import com.pixelatedmind.game.tinyuniverse.generation.music.AudioDeviceFactory
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.AudioDeviceFactory
 
 class DestopAudioDeviceFactory : AudioDeviceFactory {
     override fun newDevice(sampleRate: Int, isMono: Boolean): AudioDevice {

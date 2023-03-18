@@ -1,6 +1,5 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music.filter
 
-import com.pixelatedmind.game.tinyuniverse.generation.music.FloatInputStream
 import kotlin.math.sqrt
 
 class HighLowPassFilter(var frequency : Float, var sampleRate:Int, var passType: PassType,
