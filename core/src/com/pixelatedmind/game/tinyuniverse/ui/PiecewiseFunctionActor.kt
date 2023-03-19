@@ -43,6 +43,8 @@ class PiecewiseFunctionActor(private val function: PiecewiseModel) : Actor() {
     override fun draw(batch: Batch?, parentAlpha: Float) {
         super.draw(batch, parentAlpha)
 
+        shapeRenderer.projectionMatrix = batch!!.projectionMatrix
+        shapeRenderer.transformMatrix = batch!!.transformMatrix
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         shapeRenderer.color = Color.GRAY
         var startX = 0f
@@ -72,7 +74,7 @@ class PiecewiseFunctionActor(private val function: PiecewiseModel) : Actor() {
         shapeRenderer.setColor(Color.FIREBRICK)
         function.getPieces().forEach{
             val point = it.start
-//            shapeRenderer.circle(point.x*width, point.y*height, 5f)
+            shapeRenderer.circle(point.x*width, point.y*height, 5f)
         }
         shapeRenderer.end()
     }

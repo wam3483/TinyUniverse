@@ -8,6 +8,9 @@ import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup
+import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup
 import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModel
 import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseFunctionActor
@@ -31,12 +34,19 @@ class PiecewiseEditorTest : ApplicationAdapter() {
                         PiecewiseModel.Piece(Vector2(1f, 0f), Interpolation.linear)
                 ))
         )
-        val group = Group()
+        piecewiseEditor.width = 300f
+        piecewiseEditor.height = 300f
+        val table = Table()
+        table.pad(100f)
+        table.setFillParent(true)
+        val group = HorizontalGroup()
         group.addActor(piecewiseEditor)
-        piecewiseEditor.width = w
-        piecewiseEditor.height = h
+        group.fill()
 
-        stage.addActor(group)
+        table.add(group).pad(10f)
+        stage.addActor(table)
+        table.debug = true
+        table.layout()
         Gdx.input.setInputProcessor(stage)
         stage.setKeyboardFocus(piecewiseEditor)
         stage.setScrollFocus(piecewiseEditor)
@@ -44,7 +54,7 @@ class PiecewiseEditorTest : ApplicationAdapter() {
     }
 
     override fun render() {
-        ScreenUtils.clear(1f, 1f, 1f, 1f)
+        ScreenUtils.clear(.1f, .1f, .1f, 1f)
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         stage.draw()
