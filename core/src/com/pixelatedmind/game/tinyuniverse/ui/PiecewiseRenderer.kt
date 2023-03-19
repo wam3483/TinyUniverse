@@ -5,19 +5,17 @@ import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.*
-import com.badlogic.gdx.scenes.scene2d.utils.BaseDrawable
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 
-class PiecewiseRenderer : Group() {
-    val piecewise : Piecewise
+class PiecewiseRenderer : Actor() {
+    val piecewise : PiecewiseModel
     var lineColor : Color
 
     private val zoomOrigin = Vector2()
 
     init{
         this.touchable = Touchable.enabled
-        piecewise = Piecewise()
+        piecewise = PiecewiseModel()
         lineColor = Color(.2f,.2f,.2f,1f)
 
         val zoomScale = .05f
@@ -47,9 +45,9 @@ class PiecewiseRenderer : Group() {
     override fun draw(batch: Batch?, parentAlpha: Float) {
         super.draw(batch, parentAlpha)
         val resolution = 1
-        shapeRenderer.projectionMatrix = batch!!.projectionMatrix
+//        shapeRenderer.projectionMatrix = batch!!.projectionMatrix
 //        shapeRenderer.transformMatrix = batch!!.transformMatrix
-        shapeRenderer.updateMatrices()
+//        shapeRenderer.updateMatrices()
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = lineColor
