@@ -11,10 +11,12 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.widget.*
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.BaseWaveformStreamFactory
 import com.pixelatedmind.game.tinyuniverse.ui.EditEnvelopeListView
 import com.pixelatedmind.game.tinyuniverse.ui.OscilatorPanel
 import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModel
 import com.pixelatedmind.game.tinyuniverse.services.InterpolationFactory
+import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModelRepository
 
 
 class VisUITest : ApplicationAdapter(){
@@ -23,10 +25,14 @@ class VisUITest : ApplicationAdapter(){
     private lateinit var menuBar: MenuBar
 
     private lateinit var oscPanel : OscilatorPanel
+    private lateinit var piecewiseModelRepo : PiecewiseModelRepository
+
     override fun create() {
         VisUI.load(VisUI.SkinScale.X1)
 
         stage = Stage(ScreenViewport())
+
+        piecewiseModelRepo = PiecewiseModelRepository()
 
         val root = Table()
         root.setFillParent(true)
@@ -57,7 +63,9 @@ class VisUITest : ApplicationAdapter(){
         buildOscillatorPanel(waveformTable)
 
         val editEnvelopeListView = EditEnvelopeListView(VisUI.getSkin(), InterpolationFactory())
-        editEnvelopeListView.adapter.add(buildPiecewiseModel())
+        val model = buildPiecewiseModel()
+        piecewiseModelRepo.add(model)
+        editEnvelopeListView.adapter.add(model)
 
         val splitPane = VisSplitPane(waveformTable, editEnvelopeListView.mainTable, false)
         splitPane.setSplitAmount(.42f)
@@ -79,20 +87,21 @@ class VisUITest : ApplicationAdapter(){
     }
 
     fun buildOscillatorPanel(table : Table)  {
-        oscPanel = OscilatorPanel()
+        oscPanel = OscilatorPanel(BaseWaveformStreamFactory(), piecewiseModelRepo)
         table.add(oscPanel).expandX().fillX().padTop(7f)
         oscPanel.height = 100f
         oscPanel.width = 20f
         table.row()
-
-//        val panel = OscilatorPanel()
-//        table.add(panel).expandX().fillX().padTop(7f)
-//        panel.height = 100f
-//        table.row()
     }
 
     private fun buildMenuBar(){
         val fileMenu = Menu("File")
+        val newProject = MenuItem("New project")
+        val newEnv = MenuItem("New envelope")
+        val newOscillator = MenuItem("New oscillator")
+        fileMenu.addItem(newProject)
+        fileMenu.addItem(newEnv)
+        fileMenu.addItem(newOscillator)
         menuBar.addMenu(fileMenu)
     }
 

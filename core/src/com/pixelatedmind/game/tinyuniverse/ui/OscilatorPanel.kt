@@ -15,14 +15,17 @@ import com.kotcrab.vis.ui.widget.VisSelectBox
 import com.kotcrab.vis.ui.widget.VisTable
 import com.kotcrab.vis.ui.widget.spinner.IntSpinnerModel
 import com.kotcrab.vis.ui.widget.spinner.Spinner
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.BaseWaveformStreamFactory
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.ConstantStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
+import com.pixelatedmind.game.tinyuniverse.generation.music.utils.ArrayUtils
 import com.pixelatedmind.game.tinyuniverse.screen.synthui.Oscillator
 import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
 import java.util.*
 
 
-class OscilatorPanel : VisTable(true) {
+class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
+                     val piecewiseModelRepo : PiecewiseModelRepository) : VisTable(true) {
 
     var model : OscillatorModel
 
@@ -41,24 +44,28 @@ class OscilatorPanel : VisTable(true) {
 
     init{
         model = OscillatorModel()
+        piecewiseModelRepo.addModelDeletedListsener(this::piecewiseModelDeleted)
+
         waveformPanel = WavetableDisplayPlanel()
         waveformPanel.height = 100f
         waveformPanel.waveform = SineWaveform(ConstantStream(1f))
 
         waveformsSelectbox = VisSelectBox()
+        waveformsSelectbox.items = ArrayUtils.toArray(waveformFactory.getBaseWaveformIds())
         waveformsSelectbox.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
+                waveformPanel.waveform = waveformFactory.new(waveformsSelectbox.selected)
                 model.baseWaveformId = waveformsSelectbox.selected
                 oscillatorChangeListener?.invoke(waveformsSelectbox.selected)
             }
         })
 
 
-        val semitonesBtn = EnvelopeButton(buildPiecewiseModel(),"", VisUI.getSkin())
+        val semitonesBtn = EnvelopeButton(null,"", VisUI.getSkin())
         semitonesBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Semitone Offset", skin,
-                        listOf(buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel()),
+                        piecewiseModelRepo.getAllModels(),
                         "Starting semitone offset:",
                         "Ending semitone offset:",
                         0,-100,100,1
@@ -88,11 +95,11 @@ class OscilatorPanel : VisTable(true) {
             }
         })
 
-        val finetuneBtn = EnvelopeButton(buildPiecewiseModel(),"", VisUI.getSkin())
+        val finetuneBtn = EnvelopeButton(null,"", VisUI.getSkin())
         finetuneBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Cents Offset", skin,
-                        listOf(buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel(),buildPiecewiseModel()),
+                       piecewiseModelRepo.getAllModels(),
                         "Starting cents offset:",
                         "Ending cents offset:",
                         0,-100,100,1
@@ -125,7 +132,7 @@ class OscilatorPanel : VisTable(true) {
             }
         })
 
-        val gainBtn = EnvelopeButton(buildPiecewiseModel(),"", VisUI.getSkin())
+        val gainBtn = EnvelopeButton(null,"", VisUI.getSkin())
         val gainLinkLabel = LinkLabel("Gain:","")
         gainLinkLabel.setListener {
             url->
@@ -177,6 +184,18 @@ class OscilatorPanel : VisTable(true) {
         invalidate()
         invalidateHierarchy()
         layout()
+    }
+
+    private fun piecewiseModelDeleted(piecewise : PiecewiseModel){
+        if(model.amplitudeEnv?.name == piecewise.name){
+            model.amplitudeEnv = null
+        }
+        if(model.fineTuneCentOffsetEnv?.name == piecewise.name){
+            model.fineTuneCentOffsetEnv = null
+        }
+        if(model.semitoneOffsetEnv?.name == piecewise.name){
+            model.semitoneOffsetEnv = null
+        }
     }
 
     override fun setBounds(x: Float, y: Float, width: Float, height: Float) {

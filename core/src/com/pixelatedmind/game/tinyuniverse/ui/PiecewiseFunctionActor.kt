@@ -20,6 +20,8 @@ class PiecewiseFunctionActor(private var piecewiseModel : PiecewiseModel? = null
     }
     fun setPiecewise(model : PiecewiseModel?){
         this.piecewiseModel = model
+
+
         invalidateModel()
     }
 

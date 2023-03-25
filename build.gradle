@@ -11,7 +11,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-
+        implementation group: 'com.google.guava', name: 'guava', version: '23.5-jre'
     }
 }
 
