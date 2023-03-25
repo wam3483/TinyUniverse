@@ -36,18 +36,18 @@ class InteractivePatch : EnvelopeFactory {
 
     val notes : Notes
     var highlowFilterEnabled = false
+    var highlowFilterPassType = PassType.Low
+
     //high low filter requires a specific freq for cutoff, but i want frequency determined by key presses.
     //so we define a normalized value here to scale requested frequencies by on keypress so cutoff is set correctly
     var highlowFilterCutoffFreq = 0f
     var highlowFilterResonance = 1f
-    val highlowFilter : HighLowPassFilterInputStream2
 
     init{
         notes = Notes()
         oscillator1 = Oscillator.Sine
         oscillator2 = Oscillator.Sine
         oscillatorMix = 0f
-        highlowFilter = HighLowPassFilterInputStream2(ConstantStream(100f),ConstantStream(1f),44100, PassType.Low, SilentInputStream())
     }
 
     private fun createOscillatorFor(oscillator: Oscillator, frequency : Float) : FloatInputStream {

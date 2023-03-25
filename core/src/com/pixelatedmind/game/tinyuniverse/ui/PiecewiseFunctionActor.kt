@@ -1,85 +1,127 @@
 package com.pixelatedmind.game.tinyuniverse.ui
 
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.Actor
-import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import space.earlygrey.shapedrawer.ShapeDrawer
 
-class PiecewiseFunctionActor(private val function: PiecewiseModel) : Actor() {
+class PiecewiseFunctionActor(private var piecewiseModel : PiecewiseModel? = null) : Actor() {
 
-    private val shapeRenderer = ShapeRenderer()
+    var piecewiseFunctionColor = Color(0f, .8f,.8f,1f)
+    var underFunctionCurveColor = Color(0f, .8f,.8f,.1f)
+    private val functionPoints = mutableListOf<Float>()
 
-    init {
-        addListener(object : ClickListener() {
-            override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                if (event!!.button == 0 && tapCount == 2) {
-//                    val pieces = function.getPieces()
-//                    val clickedX = x / width
-//                    val newPiece = Piecewise.Piece({ inputX -> 2*inputX + 1 }, clickedX)
-//
-//                    var i = 0
-//                    while (i < pieces.size && pieces[i].startingX < newPiece.startingX) {
-//                        i++
-//                    }
-//                    if (i > 0 && pieces[i - 1].end > newPiece.startingX) {
-//                        // Combine with previous piece
-//                        val prevPiece = pieces[i - 1]
-//                        pieces[i - 1] = Piece(prevPiece.startingX, newPiece.startingX, { x -> if (x < newPiece.startingX) prevPiece.evaluate(x) else newPiece.evaluate(x) })
-//                    }
-//                    if (i < pieces.size && pieces[i].startingX < newPiece.end) {
-//                        // Combine with subsequent piece
-//                        val nextPiece = pieces[i]
-//                        pieces[i] = Piece(newPiece.startingX, nextPiece.startingX, { x -> if (x < newPiece.startingX) newPiece .evaluate(x) else nextPiece.evaluate(x) })
-//                    }
-//                    function.add(i, newPiece)
-//                    function.pieces = pieces.toList()
+    private var shapeDrawer : ShapeDrawer? = null
+    init{
+        setPiecewise(piecewiseModel)
+    }
+    fun setPiecewise(model : PiecewiseModel?){
+        this.piecewiseModel = model
+        invalidateModel()
+    }
+
+    override fun setY(y: Float) {
+        super.setY(y)
+        println("peicewise actor y=$y")
+    }
+
+    override fun setY(y: Float, alignment: Int) {
+        super.setY(y, alignment)
+        println("peicewise actor y=$y alignment=$alignment")
+    }
+
+    override fun setPosition(x: Float, y: Float) {
+        super.setPosition(x, y)
+        println("peicewise actor setPosition x=$x y=$y")
+    }
+
+    override fun setPosition(x: Float, y: Float, alignment: Int) {
+        super.setPosition(x, y, alignment)
+        println("peicewise actor x=$x y=$y alignment=$alignment")
+    }
+
+    override fun setBounds(x: Float, y: Float, width: Float, height: Float) {
+        println("piecewise actor setBounds: x=$x y=$y w=$width h=$height")
+        super.setBounds(x, y, width, height)
+    }
+
+
+    fun invalidateModel(){
+        var startX = 0f
+        val resolution = .01f
+        synchronized(functionPoints){
+            functionPoints.clear()
+            if(piecewiseModel!=null){
+                while(startX<1){
+                    val output = piecewiseModel!!.evaluate(startX)
+                    functionPoints.add(startX)
+                    functionPoints.add(output)
+                    startX += resolution
                 }
             }
-        })
+        }
+    }
+
+    fun initShapeDrawer(batch : Batch){
+        val region = if(shapeDrawer!=null){
+            shapeDrawer!!.region
+        }else{
+            val pixmap = Pixmap(1, 1, Pixmap.Format.RGBA8888)
+            val color = 0xFFFFFFFF
+            pixmap.setColor(color.toInt())
+            pixmap.drawPixel(0, 0)
+            val texture = Texture(pixmap) //remember to dispose of later
+
+            pixmap.dispose()
+            TextureRegion(texture, 0, 0, 1, 1)
+        }
+        shapeDrawer = ShapeDrawer(batch, region)
+    }
+
+    private fun drawLine(x1:Float, y1:Float, x2:Float, y2:Float){
+        shapeDrawer!!.line(
+                x1*width+x,
+                y1*height+y,
+                x2*width+x,
+                y2*height+y)
+    }
+
+    private fun drawFunction(){
+        shapeDrawer!!.setColor(piecewiseFunctionColor)
+        val funct = piecewiseModel
+        val resolution = .01f
+        if(this.debug)
+            println("draw piecewise actor $x $y $width $height")
+        if(funct!=null){
+            var startX = 0f
+            var lastX :Float? = null
+            var lastY :Float? = null
+            while(startX<1){
+                val output = funct.evaluate(startX)
+                if(lastX!=null){
+                    val x1 = lastX
+                    val y1 = lastY!!
+
+                    val x2 = startX
+                    val y2 = output
+                    if(debug) {
+//                        println("draw piecewise actor func: $x1 $y1 $x2 $y2")
+                    }
+                    drawLine(x1,y1,x2,y2)
+                }
+                lastX = startX
+                lastY = output
+                startX += resolution
+            }
+        }
     }
 
     override fun draw(batch: Batch?, parentAlpha: Float) {
         super.draw(batch, parentAlpha)
-
-        shapeRenderer.projectionMatrix = batch!!.projectionMatrix
-        shapeRenderer.transformMatrix = batch!!.transformMatrix
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        shapeRenderer.color = Color.GRAY
-        var startX = 0f
-        val resolution = 1f
-        var lastTime = 0f
-        var lastY = 0f
-        while(startX<width){
-            val currentTime = startX / width
-            val y = function.evaluate(currentTime)
-
-            val x1 = lastTime * width
-            val x2 = currentTime * width
-            val y1 = lastY * height
-            val y2 = y * height
-            shapeRenderer.line(x1, y1, x2, y2)
-
-            lastY = y
-            lastTime = currentTime
-            startX += resolution
-        }
-        shapeRenderer.end()
-        drawInterpolationPoints()
-    }
-
-    private fun drawInterpolationPoints(){
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.setColor(Color.FIREBRICK)
-        function.getPieces().forEach{
-            val point = it.start
-            shapeRenderer.circle(point.x*width, point.y*height, 5f)
-        }
-        shapeRenderer.end()
-    }
-
-    companion object {
-        private const val LINE_SEGMENT_LENGTH = 1f
+        initShapeDrawer(batch!!)
+        drawFunction()
     }
 }

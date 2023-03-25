@@ -4,11 +4,18 @@ import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 
 class PiecewiseModel(pieces: List<Piece> = listOf()) {
+    var name : String
+    var startX : Float = 0f
+    var endX : Float = 1f
+    var durationSecs = 1f
+    var timesToRepeat = 0
+    var repeatForever = false
     private var pieces : MutableList<Piece>
 
     constructor(vararg pieces: Piece) : this(pieces.toList())
 
     init{
+        name = ""
         this.pieces = pieces.toMutableList()
     }
 
@@ -28,10 +35,8 @@ class PiecewiseModel(pieces: List<Piece> = listOf()) {
         pieces.clear()
     }
 
-    var lastOutput : Float = 0f
-    var lastPiece : PiecewiseModel.Piece? = null
     // Evaluate the piecewise function at a given x value
-    fun evaluate(elapsedTime: Float): Float {
+    open fun evaluate(elapsedTime: Float): Float {
         if(pieces.size == 0){
             return 0f
         }
@@ -43,16 +48,18 @@ class PiecewiseModel(pieces: List<Piece> = listOf()) {
         val currentPiece = pieces[currentPieceIndex]
         val alpha = (elapsedTime - currentPiece.start.x) / (endValue.x - currentPiece.start.x)
 
-        return currentPiece.interpolate(endValue, alpha)
+        val result = currentPiece.interpolate(endValue, alpha)
+        val range = Math.abs(endX - startX)
+        return startX + result * range
     }
 
-    open class Piece(val start : Vector2, val interpolation : Interpolation){
+    open class Piece(var start : Vector2, var interpolationName : String, private var interpolation : Interpolation){
+        fun setInterpolation(name : String, interpolation : Interpolation){
+            this.interpolationName = name
+            this.interpolation = interpolation
+        }
         fun interpolate(end : Vector2, alpha : Float): Float{
-//            val alpha = elapsedTime / (end.x - start.x)
             val result = interpolation.apply(start.y, end.y, alpha)
-            if(result < 0){
-                println("interpolation result < 0")
-            }
             return result
         }
     }

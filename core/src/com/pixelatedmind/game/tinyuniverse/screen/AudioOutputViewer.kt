@@ -74,7 +74,7 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         }
         synthUI.lowPassFilterChangeListener = {cutoffFreq:Float, resonance:Float, enabled:Boolean, passType: PassType ->
             patch.highlowFilterEnabled = enabled
-            patch.highlowFilter.setPassType(passType)
+            patch.highlowFilterPassType = passType
             patch.highlowFilterCutoffFreq = cutoffFreq
             patch.highlowFilterResonance = resonance
         }
@@ -166,7 +166,7 @@ class AudioOutputViewer(val deviceFactory : AudioDeviceFactory) : ApplicationAda
         val clapPatch = ClapPatch(44100f)
         val pluckBass = PluckBass()
 //        val synthWars = SongStream.synthWars(churchOrganPatch, 5)
-        val additiveNoteGenerator = AdditiveNoteGenerator(pluckBass)
+        val additiveNoteGenerator = AdditiveNoteGenerator(patch)
 
         var stream : FloatInputStream = additiveNoteGenerator
         stream = songStream

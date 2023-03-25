@@ -30,6 +30,7 @@ allprojects {
         shapedrawerVersion = '2.5.0'
         h2dVersion = '0.1.1'
         artemisVersion='2.3.0'
+        visuiVersion = '1.5.1'
     }
 
     repositories {
@@ -54,6 +55,7 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
         api "com.badlogicgames.gdx-controllers:gdx-controllers-desktop:$gdxControllersVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        api "com.kotcrab.vis:vis-ui:$visuiVersion"
     }
 }
 

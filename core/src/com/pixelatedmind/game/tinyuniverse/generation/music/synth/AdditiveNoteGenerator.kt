@@ -9,8 +9,6 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.SilentI
 import java.util.*
 
 class AdditiveNoteGenerator(val inputStreamFactory : EnvelopeFactory) : NoteGenerator, FloatInputStream {
-
-    private val silentStream = EnvelopeImpl.buildEnvelope(SilentInputStream())
     private val streams : MutableMap<String, Envelope> = mutableMapOf()
     private val additiveWaveform = MultiplexGainEffect()
 
@@ -36,8 +34,6 @@ class AdditiveNoteGenerator(val inputStreamFactory : EnvelopeFactory) : NoteGene
             }
             streams.values.removeAll(filtersToRemove)
             val waveforms = streams.values.toMutableList()
-            if(!waveforms.any())
-                waveforms.add(silentStream)
             additiveWaveform.waveForms = waveforms
         }
         return additiveWaveform.read(timeInSeconds)
