@@ -26,6 +26,9 @@ class EnvelopeButton(function : PiecewiseModel?,text : String, skin : Skin) : Bu
         setSize(prefWidth, prefHeight)
     }
 
+    fun getPiecewiseFunction() : PiecewiseModel?{
+        return piecewiseActor.getPiecewise()
+    }
     fun setPiecewiseFunction(model : PiecewiseModel?){
         piecewiseActor.setPiecewise(model)
     }

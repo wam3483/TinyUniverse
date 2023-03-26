@@ -6,7 +6,6 @@ sourceSets.main.java.srcDirs = [ "src/" ]
 eclipse.project.name = appName + "-core"
 dependencies {
     implementation "space.earlygrey:shapedrawer:$shapedrawerVersion"
-    implementation group: 'com.google.guava', name: 'guava', version: '23.5-jre' # or 23.5-android for the Android flavor
 
     dependencies {
         //HyperLap2D Runtime

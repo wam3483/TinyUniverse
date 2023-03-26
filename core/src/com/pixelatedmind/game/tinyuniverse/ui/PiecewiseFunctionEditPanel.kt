@@ -10,10 +10,13 @@ import com.badlogic.gdx.utils.Array
 import com.kotcrab.vis.ui.widget.spinner.IntSpinnerModel
 import com.kotcrab.vis.ui.widget.spinner.Spinner
 import com.pixelatedmind.game.tinyuniverse.services.InterpolationFactory
+import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteEnvelopeRequest
+import com.pixelatedmind.game.tinyuniverse.util.EventBus
 
-class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val interpolationFactory : InterpolationFactory) : Table(skin) {
+class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val interpolationFactory : InterpolationFactory, val eventBus : EventBus) : Table(skin) {
     private var selectedPiece : PiecewiseModel.Piece? = null
     private val textboxName : TextField
+    private val deleteBtn : TextButton
     private val editButton : TextButton
     private val durationSpinner : Spinner
     private val durationSpinnerModel : IntSpinnerModel
@@ -32,6 +35,8 @@ class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val
     init{
         textboxName = TextField("", skin)
         editButton = TextButton("Edit", skin)
+        deleteBtn = TextButton("Delete", skin)
+        deleteBtn.isVisible = false
         durationSpinnerModel = IntSpinnerModel(1,1,9999999)
         timesToRepeatModel = IntSpinnerModel(0, 0, 9999999)
         durationSpinner = Spinner("Duration(ms):", durationSpinnerModel)
@@ -43,6 +48,8 @@ class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val
         piecewiseUI.setUnitGridLabel("ms")
         labelX = Label("", skin)
         labelY = Label("", skin)
+
+        textboxName.text = function.name
 
         repeatForeverCheckbox.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
@@ -58,14 +65,22 @@ class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val
             }
         })
 
+        deleteBtn.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                eventBus.post(DeleteEnvelopeRequest(function))
+            }
+        })
+
         editButton.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 setEnabled(!enabled)
                 if(!enabled){
                     editButton.setText("Edit")
+                    deleteBtn.isVisible = false
                     save()
                 }else{
                     editButton.setText("Save")
+                    deleteBtn.isVisible = true
                 }
             }
         })
@@ -187,6 +202,7 @@ class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val
         t.add(editButton).width(40f).padTop(5f).padLeft(5f)
         t.add(lbl).width(55f).padLeft(5f)
         t.add(textboxName).expandX().fillX().padTop(5f).padRight(5f)
+        t.add(deleteBtn)
         add(t).expandX().fillX()
     }
 }

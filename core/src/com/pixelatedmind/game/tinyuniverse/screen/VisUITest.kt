@@ -5,34 +5,48 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.utils.Array
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.kotcrab.vis.ui.VisUI
+import com.kotcrab.vis.ui.util.adapter.ArrayAdapter
 import com.kotcrab.vis.ui.widget.*
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.BaseWaveformStreamFactory
-import com.pixelatedmind.game.tinyuniverse.ui.EditEnvelopeListView
-import com.pixelatedmind.game.tinyuniverse.ui.OscilatorPanel
-import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModel
 import com.pixelatedmind.game.tinyuniverse.services.InterpolationFactory
-import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModelRepository
+import com.pixelatedmind.game.tinyuniverse.ui.*
+import com.pixelatedmind.game.tinyuniverse.ui.events.CreateEnvelopeHandler
+import com.pixelatedmind.game.tinyuniverse.ui.events.CreateEnvelopeRequest
+import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteEnvelopeHandler
+import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteEnvelopeRequest
+import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
+import com.pixelatedmind.game.tinyuniverse.util.EventBus
 
 
 class VisUITest : ApplicationAdapter(){
+
+    private val eventbus = EventBus()
 
     private lateinit var stage: Stage
     private lateinit var menuBar: MenuBar
 
     private lateinit var oscPanel : OscilatorPanel
-    private lateinit var piecewiseModelRepo : PiecewiseModelRepository
+    private lateinit var oscillatorTable : Table
+    private lateinit var piecewiseModelRepo : EnvelopeRepository
+    private lateinit var envelopeList : EnvelopeListViewAdapter
 
     override fun create() {
+        piecewiseModelRepo = EnvelopeRepository()
+
+        registerEventHandlers()
+
         VisUI.load(VisUI.SkinScale.X1)
 
         stage = Stage(ScreenViewport())
 
-        piecewiseModelRepo = PiecewiseModelRepository()
 
         val root = Table()
         root.setFillParent(true)
@@ -57,22 +71,38 @@ class VisUITest : ApplicationAdapter(){
         root.add(menuBar.getTable()).expandX().fillX().row()
 
 
-        val waveformTable = Table()
-        waveformTable.align(Align.top)
-        waveformTable.width = 25f
-        buildOscillatorPanel(waveformTable)
+        oscillatorTable = Table()
+        oscillatorTable.align(Align.top)
+        oscillatorTable.width = 25f
+        buildOscillatorPanel(oscillatorTable)
 
-        val editEnvelopeListView = EditEnvelopeListView(VisUI.getSkin(), InterpolationFactory())
+        envelopeList = EnvelopeListViewAdapter(eventbus, Array(), VisUI.getSkin(), InterpolationFactory())
+        val editEnvelopeListView =  ListView<PiecewiseModel>(envelopeList)
         val model = buildPiecewiseModel()
         piecewiseModelRepo.add(model)
-        editEnvelopeListView.adapter.add(model)
+        piecewiseModelRepo.addModelAddedListsener(this::newPiecewiseCreatedEvent)
+        piecewiseModelRepo.addModelDeletedListsener(this::deletePiecewiseEvent)
+        //        editEnvelopeListView.adapter.add(model)
 
-        val splitPane = VisSplitPane(waveformTable, editEnvelopeListView.mainTable, false)
+        val splitPane = VisSplitPane(oscillatorTable, editEnvelopeListView.mainTable, false)
         splitPane.setSplitAmount(.42f)
         splitPane.setMaxSplitAmount(.42f)
         root.add(splitPane).expand().fill()
 
         root.layout()
+    }
+
+    private fun deletePiecewiseEvent(model : PiecewiseModel){
+        envelopeList.removeValue(model, true)
+    }
+
+    private fun newPiecewiseCreatedEvent(model : PiecewiseModel){
+        envelopeList.add(model)
+    }
+
+    fun registerEventHandlers(){
+        eventbus.register(CreateEnvelopeHandler(piecewiseModelRepo)::handle)
+        eventbus.register(DeleteEnvelopeHandler(piecewiseModelRepo)::handle)
     }
 
     fun buildPiecewiseModel() : PiecewiseModel{
@@ -87,7 +117,7 @@ class VisUITest : ApplicationAdapter(){
     }
 
     fun buildOscillatorPanel(table : Table)  {
-        oscPanel = OscilatorPanel(BaseWaveformStreamFactory(), piecewiseModelRepo)
+        oscPanel = OscilatorPanel(OscillatorModel(), BaseWaveformStreamFactory(), piecewiseModelRepo, eventbus)
         table.add(oscPanel).expandX().fillX().padTop(7f)
         oscPanel.height = 100f
         oscPanel.width = 20f
@@ -98,6 +128,11 @@ class VisUITest : ApplicationAdapter(){
         val fileMenu = Menu("File")
         val newProject = MenuItem("New project")
         val newEnv = MenuItem("New envelope")
+        newEnv.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent, actor: Actor) {
+                eventbus.post(CreateEnvelopeRequest())
+            }
+        })
         val newOscillator = MenuItem("New oscillator")
         fileMenu.addItem(newProject)
         fileMenu.addItem(newEnv)

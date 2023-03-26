@@ -18,6 +18,9 @@ class PiecewiseFunctionActor(private var piecewiseModel : PiecewiseModel? = null
     init{
         setPiecewise(piecewiseModel)
     }
+    fun getPiecewise() : PiecewiseModel?{
+        return piecewiseModel
+    }
     fun setPiecewise(model : PiecewiseModel?){
         this.piecewiseModel = model
 

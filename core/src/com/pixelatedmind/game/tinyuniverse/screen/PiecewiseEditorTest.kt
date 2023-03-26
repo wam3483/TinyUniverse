@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.ScreenUtils
 import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModel
 import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseFunctionEditPanel
 import com.pixelatedmind.game.tinyuniverse.services.InterpolationFactory
+import com.pixelatedmind.game.tinyuniverse.util.EventBus
 
 class PiecewiseEditorTest : ApplicationAdapter() {
     lateinit var stage : Stage
@@ -36,7 +37,7 @@ class PiecewiseEditorTest : ApplicationAdapter() {
                         PiecewiseModel.Piece(Vector2(1f, 0f), "linear", Interpolation.linear)
                 ))
 //        val piecewiseEditor = PiecewiseFunctionActor(model)
-        val pEditor = PiecewiseFunctionEditPanel(model, skin, InterpolationFactory())
+        val pEditor = PiecewiseFunctionEditPanel(model, skin, InterpolationFactory(), EventBus())
         pEditor.width = 300f
         pEditor.height = 300f
         val table = Table()

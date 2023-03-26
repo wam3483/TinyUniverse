@@ -4,6 +4,9 @@ import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 
 class PiecewiseModel(pieces: List<Piece> = listOf()) {
+
+    constructor(vararg pieces: Piece) : this(pieces.toList())
+
     var name : String
     var startX : Float = 0f
     var endX : Float = 1f
@@ -11,8 +14,6 @@ class PiecewiseModel(pieces: List<Piece> = listOf()) {
     var timesToRepeat = 0
     var repeatForever = false
     private var pieces : MutableList<Piece>
-
-    constructor(vararg pieces: Piece) : this(pieces.toList())
 
     init{
         name = ""

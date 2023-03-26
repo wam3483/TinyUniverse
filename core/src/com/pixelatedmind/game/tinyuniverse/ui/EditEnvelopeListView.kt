@@ -5,15 +5,16 @@ import com.badlogic.gdx.utils.Array
 import com.kotcrab.vis.ui.util.adapter.ArrayAdapter
 import com.kotcrab.vis.ui.widget.ListView
 import com.pixelatedmind.game.tinyuniverse.services.InterpolationFactory
+import com.pixelatedmind.game.tinyuniverse.util.EventBus
 
-class EditEnvelopeListView(skin: Skin, interpolationFactory: InterpolationFactory) :
-        ListView<PiecewiseModel>(EnvelopeListViewAdapter(Array(), skin, interpolationFactory)) {
+class EditEnvelopeListView(skin: Skin, interpolationFactory: InterpolationFactory,val eventBus : EventBus) :
+        ListView<PiecewiseModel>(EnvelopeListViewAdapter(eventBus, Array(), skin, interpolationFactory)) {
 }
 
-class EnvelopeListViewAdapter(models : Array<PiecewiseModel> = Array(), val skin : Skin,
+class EnvelopeListViewAdapter(val eventBus : EventBus, models : Array<PiecewiseModel> = Array(), val skin : Skin,
                               val interpolationFactory : InterpolationFactory) : ArrayAdapter<PiecewiseModel, PiecewiseFunctionEditPanel>(models) {
     override fun createView(item: PiecewiseModel?): PiecewiseFunctionEditPanel {
-        var view = PiecewiseFunctionEditPanel(item!!, skin, interpolationFactory)
+        var view = PiecewiseFunctionEditPanel(item!!, skin, interpolationFactory, eventBus)
         return view
     }
 }

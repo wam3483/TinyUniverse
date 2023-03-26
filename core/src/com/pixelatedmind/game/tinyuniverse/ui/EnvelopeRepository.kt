@@ -1,6 +1,6 @@
 package com.pixelatedmind.game.tinyuniverse.ui
 
-class PiecewiseModelRepository {
+class EnvelopeRepository {
 
     private val models = mutableListOf<PiecewiseModel>()
     private val deleteListeners = mutableListOf<(PiecewiseModel)->Unit>()
@@ -8,6 +8,9 @@ class PiecewiseModelRepository {
 
     fun addModelDeletedListsener(listener : (PiecewiseModel)->Unit){
         deleteListeners.add(listener)
+    }
+    fun addModelAddedListsener(listener : (PiecewiseModel)->Unit){
+        addListeners.add(listener)
     }
     private fun fireModelDeletedEvent(model : PiecewiseModel){
         deleteListeners.forEach{

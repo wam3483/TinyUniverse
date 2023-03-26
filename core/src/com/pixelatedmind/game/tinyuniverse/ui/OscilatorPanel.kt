@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup
 import com.badlogic.gdx.scenes.scene2d.ui.Slider
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
@@ -19,15 +18,15 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.BaseWav
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.ConstantStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.utils.ArrayUtils
-import com.pixelatedmind.game.tinyuniverse.screen.synthui.Oscillator
+import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteEnvelopeRequest
 import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
+import com.pixelatedmind.game.tinyuniverse.util.EventBus
 import java.util.*
 
 
-class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
-                     val piecewiseModelRepo : PiecewiseModelRepository) : VisTable(true) {
-
-    var model : OscillatorModel
+class OscilatorPanel(var model : OscillatorModel = OscillatorModel(), val waveformFactory : BaseWaveformStreamFactory,
+                     val piecewiseModelRepo : EnvelopeRepository,
+                     val eventBus : EventBus) : VisTable(true) {
 
     var gainChangeListener : ((Float) -> Unit)? = null
     var oscillatorChangeListener : ((String) -> Unit)? = null
@@ -41,6 +40,9 @@ class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
     private val waveformPanel : WavetableDisplayPlanel
     private val unisonSpinner : Spinner
     private val gainSlider : Slider
+    val semitonesBtn : EnvelopeButton
+    val finetuneBtn : EnvelopeButton
+
 
     init{
         model = OscillatorModel()
@@ -61,7 +63,7 @@ class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
         })
 
 
-        val semitonesBtn = EnvelopeButton(null,"", VisUI.getSkin())
+        semitonesBtn = EnvelopeButton(null,"", VisUI.getSkin())
         semitonesBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Semitone Offset", skin,
@@ -69,11 +71,13 @@ class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
                         "Starting semitone offset:",
                         "Ending semitone offset:",
                         0,-100,100,1
-                ) { model, dialogResult ->
+                ) { dialogModel, dialogResult ->
                     if (dialogResult == DialogResult.Accept) {
-                        semitonesBtn.setPiecewiseFunction(model!!.model)
+                        semitonesBtn.setPiecewiseFunction(dialogModel!!.model)
+                        model.semitoneOffsetEnv = dialogModel!!.model
                     } else if(dialogResult == DialogResult.Clear) {
                         semitonesBtn.setPiecewiseFunction(null)
+                        model.semitoneOffsetEnv = null
                     }
                 }
                 dialog.addCloseButton()
@@ -95,7 +99,7 @@ class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
             }
         })
 
-        val finetuneBtn = EnvelopeButton(null,"", VisUI.getSkin())
+        finetuneBtn = EnvelopeButton(null,"", VisUI.getSkin())
         finetuneBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Cents Offset", skin,
@@ -103,11 +107,13 @@ class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
                         "Starting cents offset:",
                         "Ending cents offset:",
                         0,-100,100,1
-                ) { model, dialogResult ->
+                ) { dialogModel, dialogResult ->
                     if (dialogResult == DialogResult.Accept) {
-                        finetuneBtn.setPiecewiseFunction(model!!.model)
+                        finetuneBtn.setPiecewiseFunction(dialogModel!!.model)
+                        model.fineTuneCentOffsetEnv = dialogModel.model
                     } else if(dialogResult == DialogResult.Clear) {
                         finetuneBtn.setPiecewiseFunction(null)
+                        model.fineTuneCentOffsetEnv = null
                     }
                 }
                 dialog.addCloseButton()
@@ -191,9 +197,11 @@ class OscilatorPanel(val waveformFactory : BaseWaveformStreamFactory,
             model.amplitudeEnv = null
         }
         if(model.fineTuneCentOffsetEnv?.name == piecewise.name){
+            finetuneBtn.setPiecewiseFunction(null)
             model.fineTuneCentOffsetEnv = null
         }
         if(model.semitoneOffsetEnv?.name == piecewise.name){
+            semitonesBtn.setPiecewiseFunction(null)
             model.semitoneOffsetEnv = null
         }
     }
