@@ -90,7 +90,7 @@ class MutablePiecewiseFunctionActor(private val function: PiecewiseModel, var fo
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
                 println("touchDown $x $y $pointer")
                 if(enabled) {
-                    selectPieceAtPoint(x, y)
+                    selectPieceAtPoint(x, y, false)
                     touchDown = true
                 }
                 return true
@@ -140,14 +140,19 @@ class MutablePiecewiseFunctionActor(private val function: PiecewiseModel, var fo
                 firePieceFocusedEvent(arg)
             }
 
-            private fun selectPieceAtPoint(x : Float, y:Float){
+            private fun selectPieceAtPoint(x : Float, y:Float, rightClick : Boolean){
                 val temp = Vector2()
-                val selectedPoint = function.getPieces().firstOrNull {
+                val pieces = function.getPieces()
+                var selectedPoint = pieces.firstOrNull {
                     temp.set(it.start)
                     temp.x *= width
                     temp.y *= height
                     val distance = temp.dst(x, y)
                     distance <= INTERPOLATION_POINT_FOCUS_DISTANCE
+                }
+                if(pieces.size > 2 && rightClick && selectedPoint!=null){
+                    function.removePiece(selectedPoint!!)
+                    selectedPoint = null
                 }
                 if (selectedPiece != selectedPoint) {
                     internalPieceFocusedFireEvent(selectedPoint)
@@ -182,8 +187,11 @@ class MutablePiecewiseFunctionActor(private val function: PiecewiseModel, var fo
                     lastClickPosition.set(x, y)
                     createInterpolationPointAt(x,y)
                 }else {
-                    lastClickPosition.set(x, y)
-                    selectPieceAtPoint(x,y)
+                    val rightClick = event!!.button == 1
+                    if(!rightClick){
+                        lastClickPosition.set(x, y)
+                    }
+                    selectPieceAtPoint(x,y, rightClick)
                 }
             }
         })

@@ -20,6 +20,9 @@ class PiecewiseModel(pieces: List<Piece> = listOf()) {
         this.pieces = pieces.toMutableList()
     }
 
+    fun removePiece(piece : Piece) : Boolean{
+        return pieces.remove(piece)
+    }
     fun getPieces() : List<Piece>{
         return pieces.toList()
     }
