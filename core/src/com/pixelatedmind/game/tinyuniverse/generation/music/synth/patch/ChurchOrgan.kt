@@ -20,8 +20,8 @@ class ChurchOrgan(val volume : Float) : EnvelopeFactory {
     override fun newEnvelope(frequency: Float): Envelope {
         val osc2Freq = notes.increaseFrequencyBySemitones(frequency, 12)
 
-        val saw1 = SawtoothWaveform(frequency = ConstantStream(frequency))
-        val saw2 = SawtoothWaveform(frequency = ConstantStream(osc2Freq))
+        val saw1 = SawtoothWaveform(ConstantStream(frequency), 44100)
+        val saw2 = SawtoothWaveform(ConstantStream(osc2Freq), 44100)
 
         val cutoff = .8f
         val bandwidthMultiplierNorm = .01f

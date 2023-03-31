@@ -24,6 +24,73 @@ enum class DialogResult{
 
 class FunctionSelectorDialog(title : String) : VisWindow(title) {
     companion object{
+
+        fun SelectorDialog(title : String, skin : Skin,
+                                    models : List<PiecewiseModel>,
+                                    callbackFunction : (EnvelopeDialogModel<Int>?,DialogResult)->Unit
+        ) : VisWindow{
+            val window = VisWindow(title)
+            window.columnDefaults(0).left()
+
+            val adapter = EnvelopeSelectListViewAdapter(models, skin)
+            val envList = ListView<PiecewiseModel>(adapter)
+            window.add(envList.mainTable).height(300f).growX()
+            window.row()
+
+            val footerTable = buildButtonTable(skin, {result->
+                standardDialogCallback(result, callbackFunction, {
+                    val piecewiseModel = adapter.selection.firstOrNull()
+                    if(piecewiseModel==null){
+                        null
+                    }else {
+                        EnvelopeDialogModel<Int>(0,0, piecewiseModel)
+                    }
+                })
+                window.remove()
+            })
+            window.add(footerTable).center()
+            window.row()
+            prepDialog(window)
+            return window
+        }
+
+        private fun buildButtonTable(skin : Skin, callback : (DialogResult)->Unit) : Table {
+            val btnAccept = TextButton("Accept", skin)
+            val btnCancel = TextButton("Cancel", skin)
+            val btnClear = TextButton("Clear", skin)
+
+            val footerTable = Table()
+            footerTable.add(btnAccept).pad(5f)
+            footerTable.add(btnCancel).pad(5f)
+            footerTable.add(btnClear).pad(5f)
+            btnCancel.addListener(object : ClickListener(){
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    callback.invoke(DialogResult.Cancel)
+                }
+            })
+            btnClear.addListener(object : ClickListener(){
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    callback.invoke(DialogResult.Clear)
+                }
+            })
+            btnAccept.addListener(object : ClickListener(){
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    callback.invoke(DialogResult.Accept)
+                }
+            })
+            return footerTable
+        }
+
+        private inline fun <reified T> standardDialogCallback(result : DialogResult, callbackFunction : (EnvelopeDialogModel<T>?,DialogResult)->Unit, modelFactory:()->EnvelopeDialogModel<T>?){
+            when(result){
+                    DialogResult.Cancel->callbackFunction(null, result)
+                    DialogResult.Clear->callbackFunction(null, result)
+                    DialogResult.Accept->{
+                        callbackFunction.invoke(modelFactory.invoke(), result)
+                    }
+                }
+        }
+
         fun IntBoundFunctionDialog(title : String = "",
                               skin : Skin,
                               models : List<PiecewiseModel>,
@@ -44,51 +111,37 @@ class FunctionSelectorDialog(title : String) : VisWindow(title) {
             window.left()
             window.add(envList.mainTable).height(300f).growX()
             window.row()
-            val btnAccept = TextButton("Accept", skin)
-            val btnCancel = TextButton("Cancel", skin)
-            val btnClear = TextButton("Clear", skin)
 
-            val footerTable = Table()
-            footerTable.add(btnAccept).pad(5f)
-            footerTable.add(btnCancel).pad(5f)
-            footerTable.add(btnClear).pad(5f)
+            val footerTable = buildButtonTable(skin, {result->
+                standardDialogCallback(result, callbackFunction, {
+                    val piecewiseModel = adapter.selection.firstOrNull()
+                    if(piecewiseModel==null){
+                        null
+                    }else {
+                        EnvelopeDialogModel(minSpinnerModel.value, maxSpinnerModel.value, piecewiseModel)
+                    }
+                })
+                window.remove()
+            })
             window.add(footerTable).center()
             window.row()
+            prepDialog(window)
 
+            return window
+        }
+
+        private fun prepDialog(window : VisWindow){
+            window.isModal = true
+            window.addCloseButton()
+            window.left()
             window.pack()
             window.layout()
             window.centerWindow()
-            btnCancel.addListener(object : ClickListener(){
-                override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                    callbackFunction.invoke(null, DialogResult.Cancel)
-                    window.remove()
-                }
-            })
-            btnClear.addListener(object : ClickListener(){
-                override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                    callbackFunction.invoke(null, DialogResult.Clear)
-                    window.remove()
-                }
-            })
-            btnAccept.addListener(object : ClickListener(){
-                override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                    val piecewiseModel = adapter.selection.firstOrNull()
-                    if(piecewiseModel == null){
-                        callbackFunction.invoke(null, DialogResult.Accept)
-                    }else {
-                        val model = EnvelopeDialogModel(minSpinnerModel.value, maxSpinnerModel.value, piecewiseModel!!)
-                        callbackFunction.invoke(model, DialogResult.Accept)
-                    }
-                    window.remove()
-                }
-            })
-            return window
         }
 
         private fun buildRow(root : Table, skin : Skin, lblText : String, spinnerModel : AbstractSpinnerModel){
             val table = Table()
             table.left().pad(5f)
-//            table.debug = true
             table.add(Spinner(lblText, spinnerModel)).left()
 
             root.add(table)

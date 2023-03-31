@@ -53,9 +53,9 @@ class InteractivePatch : EnvelopeFactory {
     private fun createOscillatorFor(oscillator: Oscillator, frequency : Float) : FloatInputStream {
         return when(oscillator){
             Oscillator.Sine -> SineWaveform(ConstantStream(frequency),44100)
-            Oscillator.Saw-> SawtoothWaveform(ConstantStream(frequency))
-            Oscillator.Pulse-> SquareWaveform(ConstantStream(frequency))
-            Oscillator.Triangle-> TriangleWaveForm(ConstantStream(frequency))
+            Oscillator.Saw-> SawtoothWaveform(ConstantStream(frequency), 44100)
+            Oscillator.Pulse-> SquareWaveform(ConstantStream(frequency), 44100)
+            Oscillator.Triangle-> TriangleWaveForm(ConstantStream(frequency), 44100)
         }
     }
 
@@ -119,7 +119,7 @@ class InteractivePatch : EnvelopeFactory {
         if(subBass>0f)
         {
             val sineWave = GainEffect(
-                    GainEffect(TriangleWaveForm(ConstantStream(freq)), ConstantStream(.25f)), ConstantStream(subBass))
+                    GainEffect(TriangleWaveForm(ConstantStream(freq), 44100), ConstantStream(.25f)), ConstantStream(subBass))
             val additiveStream = MultiplexGainEffect(listOf(sineWave, stream), listOf(.5f, .5f))
             stream = additiveStream
         }

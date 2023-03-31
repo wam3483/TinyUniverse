@@ -14,7 +14,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.wavefor
 class PluckBass : EnvelopeFactory {
 
     fun baseStream(frequency : Float) : FloatInputStream {
-        val osc1 = SawtoothWaveform(ConstantStream(frequency))
+        val osc1 = SawtoothWaveform(ConstantStream(frequency),44100)
         return osc1
     }
 

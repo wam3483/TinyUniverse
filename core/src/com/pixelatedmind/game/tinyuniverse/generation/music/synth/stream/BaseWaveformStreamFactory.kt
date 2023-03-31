@@ -19,13 +19,13 @@ class BaseWaveformStreamFactory(val samplingRate : Int) : StreamFactory {
         if(streamId == sineId){
             return SineWaveform(frequencyStream, samplingRate)
         }else if(streamId == sawId){
-            return SawtoothWaveform(frequencyStream)
+            return SawtoothWaveform(frequencyStream, samplingRate)
         }
         else if(streamId == squareId){
-            return SquareWaveform(frequencyStream)
+            return SquareWaveform(frequencyStream, samplingRate)
         }
         else if(streamId == triangleId){
-            return TriangleWaveForm(frequencyStream)
+            return TriangleWaveForm(frequencyStream, samplingRate)
         }
         else{
             throw NotImplementedError("unknown stream id: [$streamId]")

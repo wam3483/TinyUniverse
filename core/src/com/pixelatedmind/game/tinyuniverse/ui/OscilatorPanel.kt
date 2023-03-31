@@ -130,7 +130,6 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                             model.fineTuneCentOffsetEnv = null
                         }
                     }
-                    dialog.addCloseButton()
                     stage.addActor(dialog.fadeIn())
                 }
             }
@@ -171,29 +170,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
 
         gainBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                val models = piecewiseModelRepo.getAllModels()
-                if (models.none()) {
-                    showNoEnvelopesDialog()
-                } else {
-                    val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Cents Offset", skin,
-                            piecewiseModelRepo.getAllModels(),
-                            "Starting cents offset:",
-                            "Ending cents offset:",
-                            0, -100, 100, 1
-                    ) { dialogModel, dialogResult ->
-                        if (dialogResult == DialogResult.Accept) {
-                            gainBtn.setPiecewiseFunction(dialogModel!!.model)
-                            model.amplitudeEnv = dialogModel.model
-                            model.amplitudeEnv!!.startY = 0f
-                            model.amplitudeEnv!!.endY = 1f
-                        } else if (dialogResult == DialogResult.Clear) {
-                            gainBtn.setPiecewiseFunction(null)
-                            model.amplitudeEnv = null
-                        }
-                    }
-                    dialog.addCloseButton()
-                    stage.addActor(dialog.fadeIn())
-                }
+                showAmplitudeSelectionDialog()
             }
         })
 
@@ -240,6 +217,40 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         layout()
     }
 
+    private fun showAmplitudeSelectionDialog(){
+        val models = piecewiseModelRepo.getAllModels()
+        if (models.none()) {
+            showNoEnvelopesDialog()
+        }
+        else {
+            val dialog = FunctionSelectorDialog.SelectorDialog("Amp Envelope", skin, piecewiseModelRepo.getAllModels(),
+            { dialogModel, dialogResult ->
+                if (dialogResult == DialogResult.Accept) {
+                    if(dialogModel==null) {
+                        val okDialog = Dialogs.showOKDialog(stage, "Missing Envelope", "Must select an envelope.")
+                        okDialog.addCloseButton()
+                        okDialog.closeOnEscape()
+                        okDialog.addListener(object : ChangeListener() {
+                            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                                showAmplitudeSelectionDialog()
+                            }
+                        })
+                        stage.addActor(okDialog)
+                    }else {
+                        gainBtn.setPiecewiseFunction(dialogModel!!.model)
+                        model.amplitudeEnv = dialogModel.model
+                        model.amplitudeEnv!!.startY = 0f
+                        model.amplitudeEnv!!.endY = 1f
+                    }
+                } else if (dialogResult == DialogResult.Clear) {
+                    gainBtn.setPiecewiseFunction(null)
+                    model.amplitudeEnv = null
+                }
+            })
+            stage.addActor(dialog.fadeIn())
+        }
+    }
+
     private fun showToneSelectionDialog(){
         val models = piecewiseModelRepo.getAllModels()
         if (models.none()){
@@ -264,7 +275,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                         })
                         stage.addActor(okDialog)
                     }else {
-                        semitonesBtn.setPiecewiseFunction(dialogModel!!.model)
+                        semitonesBtn.setPiecewiseFunction(dialogModel.model)
                         model.semitoneEnvelopeRange = Range(dialogModel.min, dialogModel.max)
                         model.semitoneOffsetEnv = dialogModel.model
                     }
@@ -273,7 +284,6 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                     model.semitoneOffsetEnv = null
                 }
             }
-            dialog.addCloseButton()
             stage.addActor(dialog.fadeIn())
         }
     }

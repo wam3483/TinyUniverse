@@ -22,8 +22,8 @@ class DramaticSquare(val volume : Float=1f) : EnvelopeFactory {
 
         val pitchValue = AnimatedValueImpl(.01f, frequency, osc2Freq, Interpolation.linear,-1, true)
 
-        val osc1 = SquareWaveform(ConstantStream(frequency), pulseWidth=pulseWidth)
-        val osc2 = SquareWaveform(ConstantStream(osc2Freq))//, pulseWidth=pulseWidth2)
+        val osc1 = SquareWaveform(ConstantStream(frequency), 44100, pulseWidth)
+        val osc2 = SquareWaveform(ConstantStream(osc2Freq), 44100)//, pulseWidth=pulseWidth2)
         var stream : FloatInputStream = MultiplexGainEffect(listOf(osc1, osc2), listOf(.8f,.2f))
         stream = GainEffect(stream, ConstantStream(volume))
         return EnvelopeImpl.buildEnvelope(stream,.05f,.5f,1f, Interpolation.linear,Interpolation.exp5)

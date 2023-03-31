@@ -12,7 +12,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.wavefor
 
 class ReeseBass : EnvelopeFactory {
     fun baseStream(frequency : Float) : FloatInputStream {
-        val osc1 = SawtoothWaveform(ConstantStream(frequency))
+        val osc1 = SawtoothWaveform(ConstantStream(frequency),44100)
         return osc1
     }
     override fun newEnvelope(frequency: Float): Envelope {

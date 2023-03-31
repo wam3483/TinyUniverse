@@ -4,15 +4,8 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatIn
 import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModel
 import kotlin.math.sin
 
-class SineWaveform(val frequency:FloatInputStream, var samplingRate : Int) : FloatInputStream {
-    private val onePeriod = (Math.PI*2).toFloat()
-    private var phase = 0f
-    override fun read(timeInSeconds:Float) : Float {
-        val frequency = frequency.read(timeInSeconds)
-        val currentPhase = onePeriod * frequency / samplingRate
-        phase += currentPhase
-
-        val result = sin(phase)
-        return result
+class SineWaveform(frequency:FloatInputStream, var samplingRate : Int) : AbstractWaveformStream(frequency, samplingRate) {
+    override fun mapPhaseToAmplitude(phase: Float): Float {
+        return sin(phase)
     }
 }
