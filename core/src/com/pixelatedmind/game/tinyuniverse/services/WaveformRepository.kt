@@ -20,7 +20,7 @@ class WaveformRepository {
 
     fun new(waveformName : String) : EnvelopeFactory {
 //        if(waveformName == "sine"){
-            return EnvelopeFactoryImpl({frequency -> EnvelopeImpl.buildEnvelope(SineWaveform(ConstantStream(frequency))) })
+            return EnvelopeFactoryImpl({frequency -> EnvelopeImpl.buildEnvelope(SineWaveform(ConstantStream(frequency),44100)) })
 //        }
     }
 }

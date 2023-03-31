@@ -310,7 +310,7 @@ class MutablePiecewiseFunctionActor(private val function: PiecewiseModel, var fo
         shapeDrawer!!.setColor(getFunctionColor())
         while(startX<width){
             val currentTime = startX / width
-            val output = function.evaluate(currentTime)
+            val output = function.evaluate(currentTime * function.durationSecs)
 
             val x1 = lastTime * width + x
             val x2 = currentTime * width + x

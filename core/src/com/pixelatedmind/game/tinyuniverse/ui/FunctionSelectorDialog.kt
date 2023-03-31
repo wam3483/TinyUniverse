@@ -72,8 +72,13 @@ class FunctionSelectorDialog(title : String) : VisWindow(title) {
             })
             btnAccept.addListener(object : ClickListener(){
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                    val model = EnvelopeDialogModel(minSpinnerModel.value, maxSpinnerModel.value, adapter.selection.first())
-                    callbackFunction.invoke(model, DialogResult.Accept)
+                    val piecewiseModel = adapter.selection.firstOrNull()
+                    if(piecewiseModel == null){
+                        callbackFunction.invoke(null, DialogResult.Accept)
+                    }else {
+                        val model = EnvelopeDialogModel(minSpinnerModel.value, maxSpinnerModel.value, piecewiseModel!!)
+                        callbackFunction.invoke(model, DialogResult.Accept)
+                    }
                     window.remove()
                 }
             })

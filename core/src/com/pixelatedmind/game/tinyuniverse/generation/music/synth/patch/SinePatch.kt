@@ -15,7 +15,7 @@ class SinePatch : EnvelopeFactory {
         val note = notes.getNoteFromFrequency(frequency)
         val newFrequency = notes.getNote(note, downOctave)
 
-        val stream = SineWaveform(ConstantStream(newFrequency))
+        val stream = SineWaveform(ConstantStream(newFrequency), 44100)
         val envelope = EnvelopeImpl.buildEnvelope(stream)
         return AmpEnvelopeStream(envelope, stream)
     }

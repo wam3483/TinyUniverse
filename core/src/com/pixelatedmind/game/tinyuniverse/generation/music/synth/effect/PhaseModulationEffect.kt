@@ -5,7 +5,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatIn
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 
 class PhaseModulationEffect(val inputStream : FloatInputStream, val frequency : Float, val phaseOffset: FloatInputStream, val signalRatio : Float = .5f) : FloatInputStream {
-    private val mixSignal = SineWaveform(ConstantStream(frequency))
+    private val mixSignal = SineWaveform(ConstantStream(frequency),44100)
     override fun read(timeInSeconds: Float): Float {
         val periodInSecs = 1 / frequency
         val offsetInSecs = periodInSecs * phaseOffset.read(timeInSeconds)

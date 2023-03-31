@@ -105,16 +105,13 @@ class PiecewiseFunctionActor(private var piecewiseModel : PiecewiseModel? = null
             var lastX :Float? = null
             var lastY :Float? = null
             while(startX<1){
-                val output = funct.evaluate(startX)
+                val output = funct.evaluate(startX * piecewiseModel!!.durationSecs)
                 if(lastX!=null){
                     val x1 = lastX
                     val y1 = lastY!!
 
                     val x2 = startX
                     val y2 = output
-                    if(debug) {
-//                        println("draw piecewise actor func: $x1 $y1 $x2 $y2")
-                    }
                     drawLine(x1,y1,x2,y2)
                 }
                 lastX = startX

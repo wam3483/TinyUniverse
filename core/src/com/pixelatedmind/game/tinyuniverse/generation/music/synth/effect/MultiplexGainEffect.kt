@@ -7,8 +7,9 @@ class MultiplexGainEffect(var waveForms : List<FloatInputStream> = listOf(), var
     override fun read(timeInSeconds: Float): Float {
         toggle = !toggle
         if(!waveForms.any()){
-            if(toggle) return .01f
-            else return -.01f
+            return 0f
+//            if(toggle) return .01f
+//            else return -.01f
         }
         var result = 0f
         waveForms.forEachIndexed{index, stream ->

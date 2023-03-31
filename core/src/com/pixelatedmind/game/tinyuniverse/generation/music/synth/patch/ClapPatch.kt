@@ -10,6 +10,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.Envel
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.EnvelopeImpl
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.filter.EqualizerFilter
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.filter.EqualizerStream
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.ConstantStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatInputStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.WhiteNoiseStream
 import java.util.*
@@ -42,7 +43,7 @@ class ClapPatch(private val sampleRate : Float) : EnvelopeFactory {
     override fun newEnvelope(frequency: Float): Envelope {
         var stream : FloatInputStream = WhiteNoiseStream(Random())
         stream = buildEqualizerFilter(stream)
-        stream = GainEffect(stream, -.5f)
+        stream = GainEffect(stream, ConstantStream(.25f))
         val ampEnvelope = buildAmpEnvelope()
         return AmpEnvelopeStream(ampEnvelope, stream)
     }

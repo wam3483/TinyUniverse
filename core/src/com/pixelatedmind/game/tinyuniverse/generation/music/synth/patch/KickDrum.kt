@@ -14,6 +14,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.AmpEn
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.Envelope
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.EnvelopeFactory
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.EnvelopeImpl
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.ConstantStream
 
 class KickDrum(val volume : Float) : EnvelopeFactory {
     val notes = Notes()
@@ -84,13 +85,13 @@ class KickDrum(val volume : Float) : EnvelopeFactory {
     }
 
     private fun getBaseStream(frequency : Float, streamFrequencyValue : FloatInputStream) : FloatInputStream {
-        var stream : FloatInputStream = SineWaveform(streamFrequencyValue)
+        var stream : FloatInputStream = SineWaveform(streamFrequencyValue, 44100)
 
         val subbass = SubBassInputStream(1f, streamFrequencyValue)
 
         stream = MultiplexGainEffect(listOf(stream, subbass), listOf(.75f,.25f))
 
-        stream = StartTimeEffect(GainEffect(stream, 0f))
+        stream = StartTimeEffect(GainEffect(stream, ConstantStream(.5f)))
         return stream
     }
 
@@ -98,7 +99,7 @@ class KickDrum(val volume : Float) : EnvelopeFactory {
         val envelopedPitch = buildPitchEnvelope(frequency)
 
         var stream = getBaseStream(frequency, envelopedPitch)
-        stream = GainEffect(stream, volume)
+        stream = GainEffect(stream, ConstantStream(volume))
 
         val complexAmpEnvelope = buildAmpEnvelope()
         val ampEnvelope =  AmpEnvelopeStream(complexAmpEnvelope, stream)

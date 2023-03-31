@@ -5,7 +5,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.wavefor
 
 class SubBassInputStream(normalScale : Float, frequency : FloatInputStream) : FloatInputStream {
     private var maxWaveAmplitude : Float = 0f
-    private val sineWave = SineWaveform(frequency)
+    private val sineWave = SineWaveform(frequency, 44100)
     init{
         maxWaveAmplitude = normalScale
     }

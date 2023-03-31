@@ -10,6 +10,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.Envel
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.inputs.PitchEnvelope
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.effect.GainEffect
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.ConstantStream
 
 class BasketballBounce(val volume : Float) : EnvelopeFactory {
     val notes = Notes()
@@ -26,8 +27,8 @@ class BasketballBounce(val volume : Float) : EnvelopeFactory {
         val pitchNormEnv = EnvelopeImpl(list, Pair(1f, InterpolatedPiecewiseFunction(1f, 0f, Interpolation.linear)))
         val pitchEnvelope = PitchEnvelope(pitchNormEnv, endPitch, frequency)
 
-        var stream : FloatInputStream = SineWaveform(pitchEnvelope)
-        stream = GainEffect(stream, volume)
+        var stream : FloatInputStream = SineWaveform(pitchEnvelope, 44100)
+        stream = GainEffect(stream, ConstantStream(volume))
         val ampEnvelope =  EnvelopeImpl.buildEnvelope(stream, .01f, .2f, .8f, Interpolation.linear, Interpolation.pow2)
         ampEnvelope.addReleaseListener {
             pitchEnvelope.release()

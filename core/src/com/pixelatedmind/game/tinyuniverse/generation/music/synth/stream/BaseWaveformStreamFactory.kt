@@ -5,25 +5,27 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.wavefor
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SquareWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.TriangleWaveForm
 
-class BaseWaveformStreamFactory : StreamFactory {
+class BaseWaveformStreamFactory(val samplingRate : Int) : StreamFactory {
     val sineId = "sine"
     val sawId = "saw"
     val squareId = "square"
     val triangleId = "triangle"
-    fun getBaseWaveformIds() : List<String>{
+
+    override fun getWaveformIds() : List<String>{
         return listOf(sineId, sawId, squareId, triangleId)
     }
-    override fun new(streamId: String): FloatInputStream {
+
+    override fun new(streamId: String, frequencyStream : FloatInputStream): FloatInputStream {
         if(streamId == sineId){
-            return SineWaveform(ConstantStream(1f))
+            return SineWaveform(frequencyStream, samplingRate)
         }else if(streamId == sawId){
-            return SawtoothWaveform(ConstantStream(2f))
+            return SawtoothWaveform(frequencyStream)
         }
         else if(streamId == squareId){
-            return SquareWaveform(ConstantStream(1f))
+            return SquareWaveform(frequencyStream)
         }
         else if(streamId == triangleId){
-            return TriangleWaveForm(ConstantStream(1f))
+            return TriangleWaveForm(frequencyStream)
         }
         else{
             throw NotImplementedError("unknown stream id: [$streamId]")

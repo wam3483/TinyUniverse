@@ -9,7 +9,7 @@ class PiecewiseFunctionWidget(func : PiecewiseModel?) : Widget() {
 
     init{
         piecewiseActor = PiecewiseFunctionActor(func)
-        piecewiseActor.debug = true
+//        piecewiseActor.debug = true
     }
 
     override fun getPrefWidth(): Float {

@@ -8,16 +8,35 @@ class PiecewiseModel(pieces: List<Piece> = listOf()) {
     constructor(vararg pieces: Piece) : this(pieces.toList())
 
     var name : String
-    var startX : Float = 0f
-    var endX : Float = 1f
+    var startY : Float = 0f
+    var endY : Float = 1f
     var durationSecs = 1f
     var timesToRepeat = 0
     var repeatForever = false
+
+    //if interactive, model should use the last piecewise as a release function
+    var interactive = false
+
     private var pieces : MutableList<Piece>
 
     init{
         name = ""
         this.pieces = pieces.toMutableList()
+    }
+
+    fun copy() : PiecewiseModel{
+        val newPieces = pieces.map{
+            Piece(Vector2(it.start),it.interpolationName,it.interpolation)
+        }
+        val model = PiecewiseModel(newPieces)
+        model.name = name
+        model.startY = startY
+        model.endY = endY
+        model.interactive = interactive
+        model.durationSecs = durationSecs
+        model.repeatForever = repeatForever
+        model.timesToRepeat = timesToRepeat
+        return model
     }
 
     fun removePiece(piece : Piece) : Boolean{
@@ -40,28 +59,54 @@ class PiecewiseModel(pieces: List<Piece> = listOf()) {
     }
 
     // Evaluate the piecewise function at a given x value
-    open fun evaluate(elapsedTime: Float): Float {
+    open fun evaluate(elapsedTime: Float, normalized : Boolean = false): Float {
         if(pieces.size == 0){
             return 0f
         }
-        val currentPieceIndex = pieces.indexOfFirst{it.start.x>=elapsedTime} - 1
+        val normalizedTime = elapsedTime / durationSecs
+        var currentPieceIndex = pieces.indexOfFirst{it.start.x >= normalizedTime}
+        if(currentPieceIndex > 0){
+            currentPieceIndex--
+        }
         if(currentPieceIndex < 0){
             return 0f
         }
         val endValue = pieces[currentPieceIndex+1].start
         val currentPiece = pieces[currentPieceIndex]
-        val alpha = (elapsedTime - currentPiece.start.x) / (endValue.x - currentPiece.start.x)
+
+        val normalizedFunctionDuration = endValue.x - currentPiece.start.x
+        val normalizedFunctionStartTime = currentPiece.start.x
+
+        val alpha = (normalizedTime - normalizedFunctionStartTime) / normalizedFunctionDuration
 
         val result = currentPiece.interpolate(endValue, alpha)
-        val range = Math.abs(endX - startX)
-        return startX + result * range
+        debug("func[$currentPieceIndex] = alpha=$alpha elapsed=$elapsedTime y=$result")
+        if(normalized) {
+            return result
+        }
+        else {
+            val range = Math.abs(endY - startY)
+            val scaled = startY + result * range
+            if(endY>1000){
+                println("scaledresult = $scaled range= $range normalizedResult=$result")
+            }
+            return scaled
+        }
     }
 
-    open class Piece(var start : Vector2, var interpolationName : String, private var interpolation : Interpolation){
+    var debug = false
+    private fun debug(value : String){
+        if(debug) {
+            println(value)
+        }
+    }
+
+    open class Piece(var start : Vector2, var interpolationName : String, var interpolation : Interpolation){
         fun setInterpolation(name : String, interpolation : Interpolation){
             this.interpolationName = name
             this.interpolation = interpolation
         }
+
         fun interpolate(end : Vector2, alpha : Float): Float{
             val result = interpolation.apply(start.y, end.y, alpha)
             return result

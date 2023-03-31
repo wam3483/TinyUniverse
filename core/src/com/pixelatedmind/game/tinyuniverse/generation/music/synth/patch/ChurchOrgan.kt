@@ -33,9 +33,9 @@ class ChurchOrgan(val volume : Float) : EnvelopeFactory {
 
         val lowPassStream = GainEffect(
                 HighLowPassFilterInputStream(frequency*cutoff,resonance, 44100/2, PassType.Low, oscMixStream),
-                1f)
+                ConstantStream(1f))
         val volumeAdjustedStream = GainEffect(
-                GainEffect(StartTimeEffect(lowPassStream), -.5f), volume)
+                GainEffect(StartTimeEffect(lowPassStream), ConstantStream(.25f)), ConstantStream(volume))
         val phaseModulation = PhaseModulationEffect(volumeAdjustedStream, frequency, AnimatedValueImpl(1f))
         return EnvelopeImpl.buildEnvelope(phaseModulation, .05f, .2f, 1f)
     }

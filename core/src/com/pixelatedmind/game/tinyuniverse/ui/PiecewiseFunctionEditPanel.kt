@@ -143,7 +143,7 @@ class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val
 
     private fun save(){
         function.name = textboxName.text
-        function.durationSecs = (durationSpinner.model as IntSpinnerModel).value * 1000f
+        function.durationSecs = (durationSpinner.model as IntSpinnerModel).value / 1000f
         function.repeatForever = repeatForeverCheckbox.isChecked
         function.timesToRepeat = (timesToRepeatSpinner.model as IntSpinnerModel).value
     }

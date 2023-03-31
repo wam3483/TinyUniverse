@@ -12,6 +12,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.effect.GainEff
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.AmpEnvelopeStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.Envelope
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.EnvelopeImpl
+import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.ConstantStream
 
 class ElectricPiano: EnvelopeFactory {
     val notes = Notes()
@@ -54,14 +55,14 @@ class ElectricPiano: EnvelopeFactory {
 
     private fun baseStream(frequency : Float) : FloatInputStream {
         val frequencyValue = DetunedNoteValue(frequency, .2f, .25f, Interpolation.exp5, 0, false, notes)
-        var stream : FloatInputStream = SineWaveform(frequencyValue)
-        stream = GainEffect(stream, 0f)
+        var stream : FloatInputStream = SineWaveform(frequencyValue,44100)
+        stream = GainEffect(stream, ConstantStream(.5f))
         return stream
     }
 
     override fun newEnvelope(frequency: Float): Envelope {
         var stream : FloatInputStream = UnisonEffect(frequency, this::baseStream,5,.5f)
-        stream = GainEffect(stream, -.2f)
+        stream = GainEffect(stream, ConstantStream(.4f))
         val ampEnvelope = buildAmpEnvelope()
         val result =  AmpEnvelopeStream(ampEnvelope, stream)
         return result
