@@ -23,6 +23,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.StreamF
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.utils.ArrayUtils
 import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteEnvelopeRequest
+import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteOscillatorRequest
 import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
 import com.pixelatedmind.game.tinyuniverse.ui.model.Range
 import com.pixelatedmind.game.tinyuniverse.util.EventBus
@@ -71,7 +72,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         deleteBtn = TextButton("Delete", skin)
         deleteBtn.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                remove()
+                eventBus.post(DeleteOscillatorRequest(model))
             }
         })
 
@@ -184,34 +185,41 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
             }
         })
 
+
         val waveformSelectRow = Table()
         waveformSelectRow.add(VisLabel("Form:")).padLeft(5f).padRight(5f)
-        waveformSelectRow.add(waveformsSelectbox).fillX().expandX().colspan(3).padRight(5f)
+        waveformSelectRow.add(waveformsSelectbox).growX().padRight(5f)
         waveformSelectRow.add(deleteBtn).padRight(5f)
         waveformSelectRow.add(enableBtn).width(50f)
         waveformSelectRow.left()
-        add(waveformSelectRow).growX().colspan(6).left()
+        add(waveformSelectRow).left().growX()
         row()
 
-        add(semitonesLinkLabel)
-        add(semitonesBtn)
-        add(semitonesSpinner)
+        val semitonesRow = Table()
+        semitonesRow.padLeft(5f).padRight(5f)
+        semitonesRow.add(semitonesLinkLabel).padRight(5f)
+        semitonesRow.add(semitonesBtn).padRight(5f)
+        semitonesRow.add(semitonesSpinner).growX().padRight(20f)
 
-        add(finetuneLinkLabel)
-        add(finetuneBtn)
-        add(finetuneSpinner)
+        semitonesRow.add(finetuneLinkLabel).padRight(5f)
+        semitonesRow.add(finetuneBtn).padRight(5f)
+        semitonesRow.add(finetuneSpinner).growX()
+        add(semitonesRow).left().growX()
         row()
 
-        val cell = add(waveformPanel).expand().fill().left().colspan(6)
-
+        add(waveformPanel).grow().left()
         row()
 
-        add(VisLabel("Uni:"))
-        add(unisonSpinner)
-        add(gainLinkLabel)
-        add(gainBtn)
-        add(gainSlider).colspan(2)
+        val bottomRow = Table()
+        bottomRow.padLeft(5f).padRight(5f)
+        bottomRow.add(VisLabel("Unison:")).growX().padRight(5f)
+        bottomRow.add(unisonSpinner).growX().padRight(20f)
+        bottomRow.add(gainLinkLabel).growX().padRight(5f)
+        bottomRow.add(gainBtn).padRight(5f)
+        bottomRow.add(gainSlider).growX()
+        add(bottomRow).left().growX()
         row()
+
         invalidate()
         invalidateHierarchy()
         layout()

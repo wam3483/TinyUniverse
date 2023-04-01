@@ -49,6 +49,7 @@ class NoteGeneratorKeyboardProcessor(private val noteGenerator : NoteGenerator) 
             val frequency = notes.getNote(note,octave)
             val noteId = noteGenerator.startNote(frequency)
             keycodeToNoteId[keycode] = noteId
+            println("key down : keycode[$keycode] id=[$noteId]")
             return true
         }
         return super.keyDown(keycode)
@@ -56,6 +57,7 @@ class NoteGeneratorKeyboardProcessor(private val noteGenerator : NoteGenerator) 
 
     override fun keyUp(keycode: Int): Boolean {
         val id = keycodeToNoteId[keycode]
+        println("key up : keycode=[$keycode] id=[$id]")
         if(id!=null) {
             noteGenerator.stopNote(id)
             keycodeToNoteId[keycode] = id

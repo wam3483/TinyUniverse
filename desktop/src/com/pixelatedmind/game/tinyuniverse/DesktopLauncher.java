@@ -19,10 +19,10 @@ public class DesktopLauncher {
 		config.setTitle("TinyUniverse");
 		new Lwjgl3Application(
 				new VisUITest(),
-//				new CellularAutomataViewer(),
-//				new AudioOutputViewer(audioFactory),
-//				new PiecewiseEditorTest(),
-//				new WordGeneratorViewer(),
+				//new CellularAutomataViewer(),
+				//new AudioOutputViewer(audioFactory),
+				//new PiecewiseEditorTest(),
+				//new WordGeneratorViewer(),
 				//new VoronoiGraphViewer(),
 				//new TiledMapRegionViewer(),
 				//new AutoTileMapperTester(),

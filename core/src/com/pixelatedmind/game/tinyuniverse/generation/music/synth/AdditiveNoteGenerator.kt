@@ -22,7 +22,9 @@ class AdditiveNoteGenerator(val inputStreamFactory : EnvelopeFactory) : NoteGene
 
     override fun stopNote(id: String) {
         synchronized(streams) {
-            streams[id]!!.release()
+            if(streams.containsKey(id)) {
+                streams[id]!!.release()
+            }
         }
     }
 
