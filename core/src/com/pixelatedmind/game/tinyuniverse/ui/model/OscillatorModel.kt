@@ -10,7 +10,7 @@ class OscillatorModel {
     var amplitude : Float = 1f
 
     var dutyCycleEnv : PiecewiseModel? = null
-    var dutyCycle : Float = 1f
+    var dutyCycle : Float = .5f
 
     var semitoneOffset = 0
     var semitoneEnvelopeRange : Range<Int>? = null

@@ -272,6 +272,8 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         add(bottomRow).left().growX()
         row()
 
+        showDutyCycleOptions(false)
+
         invalidate()
         invalidateHierarchy()
         layout()
