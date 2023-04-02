@@ -4,6 +4,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.wavefor
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SquareWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.TriangleWaveForm
+import com.pixelatedmind.game.tinyuniverse.ui.patch.PiecewiseStream
 
 class BaseWaveformStreamFactory(val samplingRate : Int) : StreamFactory {
     val sineId = "sine"
@@ -15,14 +16,18 @@ class BaseWaveformStreamFactory(val samplingRate : Int) : StreamFactory {
         return listOf(sineId, sawId, squareId, triangleId)
     }
 
-    override fun new(streamId: String, frequencyStream : FloatInputStream): FloatInputStream {
+    override fun new(streamId: String, dutyCycleStream : FloatInputStream?, frequencyStream : FloatInputStream): FloatInputStream {
         if(streamId == sineId){
             return SineWaveform(frequencyStream, samplingRate)
         }else if(streamId == sawId){
             return SawtoothWaveform(frequencyStream, samplingRate)
         }
         else if(streamId == squareId){
-            return SquareWaveform(frequencyStream, samplingRate)
+            if(dutyCycleStream == null) {
+                return SquareWaveform(frequencyStream, samplingRate)
+            }else{
+                return SquareWaveform(frequencyStream, samplingRate, dutyCycleStream)
+            }
         }
         else if(streamId == triangleId){
             return TriangleWaveForm(frequencyStream, samplingRate)

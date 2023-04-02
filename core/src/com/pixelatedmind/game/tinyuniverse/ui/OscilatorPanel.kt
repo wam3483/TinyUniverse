@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Slider
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
@@ -11,22 +12,24 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.util.dialog.Dialogs
+import com.kotcrab.vis.ui.util.dialog.Dialogs.OptionDialogType
+import com.kotcrab.vis.ui.util.dialog.OptionDialogAdapter
 import com.kotcrab.vis.ui.widget.LinkLabel
 import com.kotcrab.vis.ui.widget.VisLabel
 import com.kotcrab.vis.ui.widget.VisSelectBox
 import com.kotcrab.vis.ui.widget.VisTable
 import com.kotcrab.vis.ui.widget.spinner.IntSpinnerModel
+import com.kotcrab.vis.ui.widget.spinner.SimpleFloatSpinnerModel
 import com.kotcrab.vis.ui.widget.spinner.Spinner
-import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.BaseWaveformStreamFactory
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.ConstantStream
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.StreamFactory
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.utils.ArrayUtils
-import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteEnvelopeRequest
 import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteOscillatorRequest
 import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
 import com.pixelatedmind.game.tinyuniverse.ui.model.Range
 import com.pixelatedmind.game.tinyuniverse.util.EventBus
+import java.beans.Visibility
 import java.util.*
 
 
@@ -45,6 +48,12 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
     private val enableBtn : TextButton
     private val semitonesSpinner : Spinner
     private val finetuneSpinner : Spinner
+    private val squareWaveDutyCycleSpinner : Spinner
+    private val squareWaveDutyCycleBtn : EnvelopeButton
+
+    private val dutyCycleTable = Table()
+    private val dutyCycleTableCell : Cell<*>
+
     private val waveformPanel : WavetableDisplayPlanel
     private val unisonSpinner : Spinner
     private val gainSlider : Slider
@@ -63,16 +72,48 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         waveformsSelectbox.items = ArrayUtils.toArray(waveformFactory.getWaveformIds())
         waveformsSelectbox.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
-                waveformPanel.waveform = waveformFactory.new(waveformsSelectbox.selected, ConstantStream(1f))
+                val selectedWaveform = waveformsSelectbox.selected
+                val showDutyCycle = selectedWaveform == "square"
+                showDutyCycleOptions(showDutyCycle)
+                waveformPanel.waveform = waveformFactory.new(selectedWaveform, null, ConstantStream(1f))
                 model.baseWaveformId = waveformsSelectbox.selected
                 oscillatorChangeListener?.invoke(waveformsSelectbox.selected)
+            }
+        })
+
+        val squareWaveDutyCycleLink = LinkLabel("Duty Cycle:","")
+        squareWaveDutyCycleLink.setListener {
+            url->
+            println("clicked squareWaveDutyCycleLink")
+        }
+        squareWaveDutyCycleBtn = EnvelopeButton(null,"", skin)
+        squareWaveDutyCycleBtn.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                showEnvelopeSelectionDialog("Duty Cycle", {piecewiseModel->
+                    model.dutyCycleEnv = piecewiseModel
+                    squareWaveDutyCycleBtn.setPiecewiseFunction(piecewiseModel)
+                })
+            }
+        })
+        val squareWaveSpinnerModel = SimpleFloatSpinnerModel(0f,0f, 1f, .1f)
+        squareWaveDutyCycleSpinner = Spinner("", squareWaveSpinnerModel)
+        squareWaveSpinnerModel.value = model.dutyCycle
+        squareWaveDutyCycleSpinner.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                model.dutyCycle = squareWaveSpinnerModel.value
             }
         })
 
         deleteBtn = TextButton("Delete", skin)
         deleteBtn.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                eventBus.post(DeleteOscillatorRequest(model))
+                val dialog = Dialogs.showOptionDialog(stage, "Delete Oscillator?", "Proceed with deleting oscillator?", OptionDialogType.YES_NO_CANCEL, object : OptionDialogAdapter() {
+                    override fun yes() {
+                        eventBus.post(DeleteOscillatorRequest(model))
+                    }
+                })
+                dialog.addCloseButton()
+                dialog.closeOnEscape()
             }
         })
 
@@ -97,8 +138,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         })
         val semitonesLinkLabel = LinkLabel("Semi:","")
         semitonesLinkLabel.setListener {
-            url->
-            println("clicked linklabel")
+            url->showToneSelectionDialog()
         }
         semitonesSpinner = Spinner("", IntSpinnerModel(0,-144, 144, 1))
         semitonesSpinner.addListener(object : ChangeListener() {
@@ -171,7 +211,14 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
 
         gainBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                showAmplitudeSelectionDialog()
+                showEnvelopeSelectionDialog("Amp Envelope", {func->
+                    gainBtn.setPiecewiseFunction(func)
+                    model.amplitudeEnv = func
+                    if(model.amplitudeEnv!=null) {
+                        model.amplitudeEnv!!.startY = 0f
+                        model.amplitudeEnv!!.endY = 1f
+                    }
+                })
             }
         })
 
@@ -185,15 +232,20 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
             }
         })
 
-
         val waveformSelectRow = Table()
         waveformSelectRow.add(VisLabel("Form:")).padLeft(5f).padRight(5f)
         waveformSelectRow.add(waveformsSelectbox).growX().padRight(5f)
+
+        dutyCycleTable.add(squareWaveDutyCycleLink).padRight(5f)
+        dutyCycleTable.add(squareWaveDutyCycleBtn).padRight(5f)
+        dutyCycleTable.add(squareWaveDutyCycleSpinner).padRight(5f)
+        dutyCycleTableCell = waveformSelectRow.add(dutyCycleTable)
         waveformSelectRow.add(deleteBtn).padRight(5f)
         waveformSelectRow.add(enableBtn).width(50f)
         waveformSelectRow.left()
         add(waveformSelectRow).left().growX()
         row()
+//        waveformSelectRow.debug = true
 
         val semitonesRow = Table()
         semitonesRow.padLeft(5f).padRight(5f)
@@ -225,13 +277,26 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         layout()
     }
 
-    private fun showAmplitudeSelectionDialog(){
+    val spacing = 5f
+    private fun showDutyCycleOptions(visibility: Boolean){
+        dutyCycleTable.isVisible = visibility
+        if(visibility) {
+            dutyCycleTableCell.width(dutyCycleTable.prefWidth).padRight(spacing)
+        }else{
+            dutyCycleTableCell.width(0f).padRight(0f)
+        }
+        dutyCycleTable.invalidateHierarchy()
+        pack()
+        invalidateHierarchy()
+    }
+
+    private fun showEnvelopeSelectionDialog(title : String, callback : (PiecewiseModel?)->Unit){
         val models = piecewiseModelRepo.getAllModels()
         if (models.none()) {
             showNoEnvelopesDialog()
         }
         else {
-            val dialog = FunctionSelectorDialog.SelectorDialog("Amp Envelope", skin, piecewiseModelRepo.getAllModels(),
+            val dialog = FunctionSelectorDialog.SelectorDialog(title, skin, piecewiseModelRepo.getAllModels(),
             { dialogModel, dialogResult ->
                 if (dialogResult == DialogResult.Accept) {
                     if(dialogModel==null) {
@@ -240,19 +305,16 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                         okDialog.closeOnEscape()
                         okDialog.addListener(object : ChangeListener() {
                             override fun changed(event: ChangeEvent?, actor: Actor?) {
-                                showAmplitudeSelectionDialog()
+                                showEnvelopeSelectionDialog(title, callback)
                             }
                         })
                         stage.addActor(okDialog)
                     }else {
-                        gainBtn.setPiecewiseFunction(dialogModel!!.model)
-                        model.amplitudeEnv = dialogModel.model
-                        model.amplitudeEnv!!.startY = 0f
-                        model.amplitudeEnv!!.endY = 1f
+                        callback.invoke(dialogModel.model)
                     }
                 } else if (dialogResult == DialogResult.Clear) {
                     gainBtn.setPiecewiseFunction(null)
-                    model.amplitudeEnv = null
+                    callback.invoke(null)
                 }
             })
             stage.addActor(dialog.fadeIn())
@@ -292,12 +354,14 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                     model.semitoneOffsetEnv = null
                 }
             }
+            dialog.closeOnEscape()
             stage.addActor(dialog.fadeIn())
         }
     }
 
     private fun showNoEnvelopesDialog(){
         Dialogs.showOKDialog(stage, "Envelope selection", "No envelopes exist. Must create an envelope first to automate this field.")
+                .addCloseButton()
     }
 
     private fun piecewiseModelDeleted(piecewise : PiecewiseModel){

@@ -6,12 +6,12 @@ abstract class AbstractWaveformStream(val frequency : FloatInputStream, var samp
     protected val onePeriod = (Math.PI*2).toFloat()
     private var phase = 0f
 
-    protected abstract fun mapPhaseToAmplitude(phase : Float) : Float
+    protected abstract fun mapPhaseToAmplitude(elapsedTime : Float, phase : Float) : Float
 
     override fun read(timeInSeconds: Float): Float {
         val frequency = frequency.read(timeInSeconds)
         val currentPhase = onePeriod * frequency / sampleRate
         phase += currentPhase
-        return mapPhaseToAmplitude(phase)
+        return mapPhaseToAmplitude(timeInSeconds, phase)
     }
 }

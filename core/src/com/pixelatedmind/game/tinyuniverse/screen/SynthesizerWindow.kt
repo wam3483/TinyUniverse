@@ -65,7 +65,9 @@ class SynthesizerWindow : ApplicationAdapter(){
 
         VisUI.load(VisUI.SkinScale.X1)
 
-        stage = Stage(ExtendViewport(900f,480f))
+        val width = Gdx.graphics.width.toFloat()
+        val height = Gdx.graphics.height.toFloat()
+        stage = Stage(ExtendViewport(width,height))
 
         rootTable = Table()
         rootTable.setFillParent(true)

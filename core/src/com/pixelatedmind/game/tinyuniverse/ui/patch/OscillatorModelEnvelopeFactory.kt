@@ -13,7 +13,13 @@ import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
 class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel, val waveformStreamFactory: StreamFactory, val noteUtil : Notes) : EnvelopeFactory {
 
     private fun getWaveformStream(frequencyInput : FloatInputStream) : FloatInputStream {
-        return waveformStreamFactory.new(oscillatorModel.baseWaveformId, frequencyInput)
+        var dutyCycleStream : FloatInputStream? = null
+        if(oscillatorModel.dutyCycleEnv != null){
+            dutyCycleStream = PiecewiseStream(oscillatorModel.dutyCycleEnv!!)
+        }else{
+            dutyCycleStream = ConstantStream(oscillatorModel.dutyCycle)
+        }
+        return waveformStreamFactory.new(oscillatorModel.baseWaveformId, dutyCycleStream, frequencyInput)
     }
 
     private fun getAmplitudeStream(stream : FloatInputStream,  releaseListeners : MutableList<()->Unit>, completeListener : ()->Unit) : FloatInputStream {
@@ -104,7 +110,6 @@ class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel, val 
 
         var result : EnvelopeStream? = null
         val completeCallback = {
-            println("done!")
             result!!.setIsComplete(true)
         }
 

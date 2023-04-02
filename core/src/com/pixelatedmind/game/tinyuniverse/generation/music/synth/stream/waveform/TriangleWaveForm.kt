@@ -11,7 +11,7 @@ class TriangleWaveForm(frequency : FloatInputStream, sampleRate : Int): Abstract
 //        val triangleFrom0To1 = 1f / halfPeriod * (halfPeriod - abs(timeInSeconds % period-halfPeriod))
 //        return (triangleFrom0To1 * 2) - 1
 //    }
-    override fun mapPhaseToAmplitude(phase: Float): Float {
+    override fun mapPhaseToAmplitude(elapsedSecs : Float, phase: Float): Float {
         val normalizedPhase = phase % onePeriod
         val divisor = normalizedPhase / PI.toFloat()
         if(divisor<=1){
