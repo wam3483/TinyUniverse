@@ -18,7 +18,7 @@ public class DesktopLauncher {
 		config.setBackBufferConfig(0,0,0,1,0,0,3);
 		config.setTitle("TinyUniverse");
 		new Lwjgl3Application(
-				new VisUITest(),
+				new SynthesizerWindow(),
 				//new CellularAutomataViewer(),
 				//new AudioOutputViewer(audioFactory),
 				//new PiecewiseEditorTest(),

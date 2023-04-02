@@ -33,7 +33,7 @@ import com.pixelatedmind.game.tinyuniverse.ui.patch.UIInteractableEnvelope
 import com.pixelatedmind.game.tinyuniverse.util.EventBus
 
 
-class VisUITest : ApplicationAdapter(){
+class SynthesizerWindow : ApplicationAdapter(){
 
     private val eventbus = EventBus()
 
@@ -41,7 +41,6 @@ class VisUITest : ApplicationAdapter(){
     private lateinit var rootTable : Table
     private lateinit var menuBar: MenuBar
 
-//    private lateinit var oscPanel : OscilatorPanel
     private lateinit var oscillatorTable : Table
     private lateinit var piecewiseModelRepo : EnvelopeRepository
     private lateinit var envelopeList : EnvelopeListViewAdapter
@@ -88,31 +87,37 @@ class VisUITest : ApplicationAdapter(){
         })
         rootTable.add(menuBar.getTable()).expandX().fillX().row()
 
-
         oscillatorTable.align(Align.top)
-//        buildOscillatorPanel(oscillatorTable)
 
         envelopeList = EnvelopeListViewAdapter(eventbus, Array(), VisUI.getSkin(), InterpolationFactory())
 
-        val tabContainer = VisTable()
+        val tabRootTable = Table()
+        tabRootTable.padTop(5f)
+        val tabView = VisTable()
         val tabbedPane = TabbedPane()
+        tabRootTable.add(tabbedPane.table).growX().align(Align.top).align(Align.left)
+        tabRootTable.row()
+        tabRootTable.add(tabView).grow()
         tabbedPane.addListener(object : TabbedPaneAdapter(){
-            override fun switchedTab(tab: Tab?) {
-                tabContainer.clearChildren();
-                tabContainer.add(tab!!.contentTable).expand().fill()
+            override fun switchedTab(tab: Tab?){
+                tabView.clearChildren();
+                if(tab!=null) {
+                    tabView.add(tab.contentTable).expand().fill()
+                }
             }
         })
 
         val editEnvelopeListView =  ListView<PiecewiseModel>(envelopeList)
         val envelopeTab = SimpleTab("Envelopes", editEnvelopeListView.mainTable)
-        val testTab = SimpleTab("Test", Table())
+        val testTab = SimpleTab("Filters", Table())
         tabbedPane.add(envelopeTab)
         tabbedPane.add(testTab)
 
         piecewiseModelRepo.addModelAddedListsener(this::newPiecewiseCreatedEvent)
         piecewiseModelRepo.addModelDeletedListsener(this::deletePiecewiseEvent)
 
-        val splitPane = VisSplitPane(oscillatorTable, editEnvelopeListView.mainTable, false)
+        val splitPane = VisSplitPane(oscillatorTable, tabRootTable,//editEnvelopeListView.mainTable,
+                false)
         splitPane.setSplitAmount(.42f)
         splitPane.setMaxSplitAmount(.42f)
         rootTable.add(splitPane).grow()
@@ -140,18 +145,6 @@ class VisUITest : ApplicationAdapter(){
         eventbus.register(oscillatorCreateDeleteHandler::onCreateOscillatorRequest)
         eventbus.register(oscillatorCreateDeleteHandler::onDeleteOscillatorRequest)
     }
-
-//    fun buildOscillatorPanel(table : Table)  {
-//        val model = OscillatorModel()
-//        oscPanel = OscilatorPanel(model, BaseWaveformStreamFactory(44100), piecewiseModelRepo, eventbus)
-//
-//        val oscillatorFactory = OscillatorModelEnvelopeFactory(model, BaseWaveformStreamFactory(44100), Notes())
-//        multiplexEnvelopeFactory.addFactory(oscillatorFactory)
-//
-//        table.add(oscPanel).growX().padTop(7f)
-//        oscPanel.height = 100f
-//        table.row()
-//    }
 
     private fun buildMenuBar(){
         val fileMenu = Menu("File")
