@@ -1,4 +1,6 @@
 package com.pixelatedmind.game.tinyuniverse.ui.events
 
-class CreateOscillatorRequest {
+import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
+
+class CreateOscillatorRequest(val model : OscillatorModel? = null) {
 }

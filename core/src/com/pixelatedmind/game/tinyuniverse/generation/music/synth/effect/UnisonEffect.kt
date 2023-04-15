@@ -1,5 +1,6 @@
 package com.pixelatedmind.game.tinyuniverse.generation.music.synth.effect
 
+import com.pixelatedmind.game.tinyuniverse.generation.music.Notes
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatInputStream
 
 class UnisonEffect(val frequency : Float,
@@ -7,7 +8,8 @@ class UnisonEffect(val frequency : Float,
                    numVoices : Int,
                    detunePercent:Float) : FloatInputStream {
 
-    private val unisonStream : FloatInputStream = unisonEffect(frequency, numVoices, detunePercent)
+    private val notes = Notes()
+    private val unisonStream : FloatInputStream = unisonEffect2(frequency, numVoices, detunePercent)
 
     private fun generateNormalizedIrrationals(count : Int) : List<Float> {
         var rootArg = 2.0
@@ -27,13 +29,37 @@ class UnisonEffect(val frequency : Float,
         return result.map{it * normalMult}
     }
 
+    private fun unisonEffect2(frequency :Float, numStreams : Int, detuneCents : Float) : FloatInputStream{
+        val noteBandwidth = notes.getNoteBandwidth(frequency)
+        val detuneCentWidth = (numStreams - 1) * (detuneCents *100)
+        val detuneFrequencyWidth = detuneCentWidth * (noteBandwidth / 100f)
+        val detuneInc = detuneFrequencyWidth / numStreams
+
+
+        var i = 0
+        var detuneFreq = frequency - (detuneFrequencyWidth / 2)
+        val streams = mutableListOf<FloatInputStream>()
+        while(i < numStreams){
+            val stream = streamFactory.invoke(detuneFreq)
+            streams.add(stream)
+            detuneFreq += detuneInc
+            i++
+        }
+        val weights = mutableListOf<Float>()
+        repeat(numStreams){
+            weights.add(1f/numStreams)
+        }
+        return MultiplexGainEffect(streams, weights)
+    }
+
     private fun unisonEffect(frequency : Float, numStreams : Int, detunePercent : Float): FloatInputStream {
         val perVoiceFrequencyMult = generateNormalizedIrrationals(numStreams+1)
         val detune = mutableListOf<Float>()
         var i =0
         var sum = 0f
         while(i<numStreams){
-            val delta = (perVoiceFrequencyMult[i+1] - perVoiceFrequencyMult[i]) * detunePercent
+            val pitchRange = (perVoiceFrequencyMult[i+1] - perVoiceFrequencyMult[i])
+            val delta = pitchRange * detunePercent
             val detuneValue = Math.pow(2.0, delta.toDouble()).toFloat()
             detune.add(detuneValue)
             sum += detuneValue

@@ -4,7 +4,7 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatIn
 
 abstract class AbstractWaveformStream(val frequency : FloatInputStream, var sampleRate : Int) : FloatInputStream {
     protected val onePeriod = (Math.PI*2).toFloat()
-    private var phase = 0f
+    var phase = 0f
 
     protected abstract fun mapPhaseToAmplitude(elapsedTime : Float, phase : Float) : Float
 

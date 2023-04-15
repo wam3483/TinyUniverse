@@ -9,14 +9,24 @@ class EnvelopeRepository {
     fun addModelDeletedListsener(listener : (PiecewiseModel)->Unit){
         deleteListeners.add(listener)
     }
+
+    fun clear(){
+        models.forEach{
+            fireModelDeletedEvent(it)
+        }
+        models.clear()
+    }
+
     fun addModelAddedListsener(listener : (PiecewiseModel)->Unit){
         addListeners.add(listener)
     }
+
     private fun fireModelDeletedEvent(model : PiecewiseModel){
         deleteListeners.forEach{
             it.invoke(model)
         }
     }
+
     private fun fireModelAddedEvent(model : PiecewiseModel){
         addListeners.forEach{
             it.invoke(model)

@@ -37,12 +37,12 @@ class PiecewiseFunctionEditPanel(val function : PiecewiseModel, skin : Skin, val
         editButton = TextButton("Edit", skin)
         deleteBtn = TextButton("Delete", skin)
         deleteBtn.isVisible = false
-        durationSpinnerModel = IntSpinnerModel(1,1,9999999)
-        timesToRepeatModel = IntSpinnerModel(0, 0, 9999999)
+        durationSpinnerModel = IntSpinnerModel((function.durationSecs*1000).toInt(),1,9999999)
+        timesToRepeatModel = IntSpinnerModel(function.timesToRepeat, 0, 9999999)
         durationSpinner = Spinner("Duration(ms):", durationSpinnerModel)
         timesToRepeatSpinner = Spinner("Times to repeat:", timesToRepeatModel)
         repeatForeverCheckbox = CheckBox("",skin)
-        repeatForeverCheckbox.isChecked = false
+        repeatForeverCheckbox.isChecked = function.repeatForever
         selectBoxInterpolation = SelectBox(skin)
         piecewiseUI = MutablePiecewiseFunctionActor(function)
         piecewiseUI.setUnitGridLabel("ms")

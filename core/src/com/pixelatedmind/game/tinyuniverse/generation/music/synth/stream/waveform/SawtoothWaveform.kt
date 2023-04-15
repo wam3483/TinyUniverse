@@ -2,14 +2,13 @@ package com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.wavefo
 
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.FloatInputStream
 
-class SawtoothWaveform(frequency : FloatInputStream, sampleRate : Int) : AbstractWaveformStream(frequency,sampleRate) {
-    override fun mapPhaseToAmplitude(elapsedSecs : Float, phase: Float): Float {
-        val normalizedPhase = phase % onePeriod
+class SawtoothWaveform(frequency : FloatInputStream, sampleRate : Int, startPhase : Float = 0f) : AbstractWaveformStream(frequency,sampleRate) {
+    init{
+        phase = startPhase
+    }
+    override fun mapPhaseToAmplitude(elapsedTime : Float, phase: Float): Float {
+        val normalizedPhase = (phase % onePeriod) / onePeriod
         return normalizedPhase * 2 - 1
-//        val freq = frequency.read(timeInSeconds)
-//        val period = 1 / freq
-//        val result = (timeInSeconds % period) / period * 2 - 1
-//        return result
     }
 
 }

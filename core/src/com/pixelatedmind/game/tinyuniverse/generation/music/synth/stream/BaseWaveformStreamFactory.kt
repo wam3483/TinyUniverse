@@ -16,11 +16,11 @@ class BaseWaveformStreamFactory(val samplingRate : Int) : StreamFactory {
         return listOf(sineId, sawId, squareId, triangleId)
     }
 
-    override fun new(streamId: String, dutyCycleStream : FloatInputStream?, frequencyStream : FloatInputStream): FloatInputStream {
+    override fun new(streamId: String, dutyCycleStream : FloatInputStream?, frequencyStream : FloatInputStream, phase : Float): FloatInputStream {
         if(streamId == sineId){
-            return SineWaveform(frequencyStream, samplingRate)
+            return SineWaveform(frequencyStream, samplingRate, phase)
         }else if(streamId == sawId){
-            return SawtoothWaveform(frequencyStream, samplingRate)
+            return SawtoothWaveform(frequencyStream, samplingRate, phase)
         }
         else if(streamId == squareId){
             if(dutyCycleStream == null) {

@@ -2,12 +2,13 @@ package com.pixelatedmind.game.tinyuniverse.ui
 
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
+import com.pixelatedmind.game.tinyuniverse.ui.model.NameableId
+import java.util.*
 
-class PiecewiseModel(pieces: List<Piece> = listOf()) {
+class PiecewiseModel(pieces: List<Piece> = listOf()) : NameableId(UUID.randomUUID().toString(), "") {
 
     constructor(vararg pieces: Piece) : this(pieces.toList())
 
-    var name : String
     var startY : Float = 0f
     var endY : Float = 1f
     var durationSecs = 1f
@@ -87,9 +88,6 @@ class PiecewiseModel(pieces: List<Piece> = listOf()) {
         else {
             val range = Math.abs(endY - startY)
             val scaled = startY + result * range
-            if(endY>1000){
-                println("scaledresult = $scaled range= $range normalizedResult=$result")
-            }
             return scaled
         }
     }

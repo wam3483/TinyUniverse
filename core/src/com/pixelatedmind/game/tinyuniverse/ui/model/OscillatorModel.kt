@@ -3,6 +3,8 @@ package com.pixelatedmind.game.tinyuniverse.ui.model
 import com.pixelatedmind.game.tinyuniverse.ui.PiecewiseModel
 
 class OscillatorModel {
+    val effectIds = mutableListOf<EffectRef>()
+
     var enabled : Boolean = true
     var baseWaveformId : String = "sine"
 
@@ -23,5 +25,11 @@ class OscillatorModel {
     var unisonVoices = 0 //may need more control around this later.
 }
 
-class Range<T>(val min : T, val max : T){
+class EffectRef(val nameId : NameableId, var enabled : Boolean){
+    constructor() : this(NameableId("",""),false){}
+}
+
+class Range<T>(var min : T?, var max : T?){
+    constructor() : this(null, null)
+    {}
 }

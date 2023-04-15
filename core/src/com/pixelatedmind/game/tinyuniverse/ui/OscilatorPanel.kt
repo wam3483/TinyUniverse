@@ -11,13 +11,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.kotcrab.vis.ui.VisUI
+import com.kotcrab.vis.ui.util.adapter.AbstractListAdapter
 import com.kotcrab.vis.ui.util.dialog.Dialogs
 import com.kotcrab.vis.ui.util.dialog.Dialogs.OptionDialogType
 import com.kotcrab.vis.ui.util.dialog.OptionDialogAdapter
-import com.kotcrab.vis.ui.widget.LinkLabel
-import com.kotcrab.vis.ui.widget.VisLabel
-import com.kotcrab.vis.ui.widget.VisSelectBox
-import com.kotcrab.vis.ui.widget.VisTable
+import com.kotcrab.vis.ui.widget.*
 import com.kotcrab.vis.ui.widget.spinner.IntSpinnerModel
 import com.kotcrab.vis.ui.widget.spinner.SimpleFloatSpinnerModel
 import com.kotcrab.vis.ui.widget.spinner.Spinner
@@ -25,16 +23,24 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.Constan
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.StreamFactory
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
 import com.pixelatedmind.game.tinyuniverse.generation.music.utils.ArrayUtils
+import com.pixelatedmind.game.tinyuniverse.ui.dialogs.DialogResult
+import com.pixelatedmind.game.tinyuniverse.ui.dialogs.EffectDialog
+import com.pixelatedmind.game.tinyuniverse.ui.dialogs.FunctionSelectorDialog
+import com.pixelatedmind.game.tinyuniverse.ui.events.AddEffectToOscillatorRequest
 import com.pixelatedmind.game.tinyuniverse.ui.events.DeleteOscillatorRequest
+import com.pixelatedmind.game.tinyuniverse.ui.events.OscillatorUI_CRUDEventHandler
+import com.pixelatedmind.game.tinyuniverse.ui.events.RemoveEffectFromOscillatorRequest
+import com.pixelatedmind.game.tinyuniverse.ui.model.EffectRef
+import com.pixelatedmind.game.tinyuniverse.ui.model.NameableId
 import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
 import com.pixelatedmind.game.tinyuniverse.ui.model.Range
 import com.pixelatedmind.game.tinyuniverse.util.EventBus
-import java.beans.Visibility
 import java.util.*
 
 
 class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFactory,
                      val piecewiseModelRepo : EnvelopeRepository,
+                     val effectRepository: EffectRepository,
                      val eventBus : EventBus) : VisTable(true) {
 
     var gainChangeListener : ((Float) -> Unit)? = null
@@ -62,6 +68,14 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
     val gainBtn : EnvelopeButton
     
     init{
+
+        val effectListAdapter = EffectRefListViewAdapter()
+        val editEnvelopeListView =  ListView<EffectRef>(effectListAdapter)
+        effectListAdapter.selectionMode = AbstractListAdapter.SelectionMode.MULTIPLE
+        val crudUIEventHandler = OscillatorUI_CRUDEventHandler(model, effectListAdapter)
+        eventBus.register(crudUIEventHandler::onEffectRemovedFromOscillator)
+        eventBus.register(crudUIEventHandler::onEffectAddedToOscillator)
+
         piecewiseModelRepo.addModelDeletedListsener(this::piecewiseModelDeleted)
 
         waveformPanel = WavetableDisplayPlanel()
@@ -70,6 +84,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
 
         waveformsSelectbox = VisSelectBox()
         waveformsSelectbox.items = ArrayUtils.toArray(waveformFactory.getWaveformIds())
+        waveformsSelectbox.selected = model.baseWaveformId
         waveformsSelectbox.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 val selectedWaveform = waveformsSelectbox.selected
@@ -86,7 +101,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
             url->
             println("clicked squareWaveDutyCycleLink")
         }
-        squareWaveDutyCycleBtn = EnvelopeButton(null,"", skin)
+        squareWaveDutyCycleBtn = EnvelopeButton(model.dutyCycleEnv,"", skin)
         squareWaveDutyCycleBtn.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 showEnvelopeSelectionDialog("Duty Cycle", {piecewiseModel->
@@ -95,9 +110,8 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                 })
             }
         })
-        val squareWaveSpinnerModel = SimpleFloatSpinnerModel(0f,0f, 1f, .1f)
+        val squareWaveSpinnerModel = SimpleFloatSpinnerModel(model.dutyCycle,0f, 1f, .1f)
         squareWaveDutyCycleSpinner = Spinner("", squareWaveSpinnerModel)
-        squareWaveSpinnerModel.value = model.dutyCycle
         squareWaveDutyCycleSpinner.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 model.dutyCycle = squareWaveSpinnerModel.value
@@ -131,6 +145,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         })
 
         semitonesBtn = EnvelopeButton(null,"", VisUI.getSkin())
+        semitonesBtn.setPiecewiseFunction(model.semitoneOffsetEnv)
         semitonesBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 showToneSelectionDialog()
@@ -140,7 +155,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         semitonesLinkLabel.setListener {
             url->showToneSelectionDialog()
         }
-        semitonesSpinner = Spinner("", IntSpinnerModel(0,-144, 144, 1))
+        semitonesSpinner = Spinner("", IntSpinnerModel(model.semitoneOffset,-144, 144, 1))
         semitonesSpinner.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 val intModel = semitonesSpinner.model as IntSpinnerModel
@@ -151,18 +166,19 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         })
 
         finetuneBtn = EnvelopeButton(null,"", VisUI.getSkin())
+        finetuneBtn.setPiecewiseFunction(model.fineTuneCentOffsetEnv)
         finetuneBtn.addListener(object : ClickListener(){
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 val models = piecewiseModelRepo.getAllModels()
                 if (models.none()){
                     showNoEnvelopesDialog()
                 }else {
-                    val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Cents Offset", skin,
+                    val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Cents Offset", skin,stage,
                             piecewiseModelRepo.getAllModels(),
                             "Starting cents offset:",
                             "Ending cents offset:",
                             0, -100, 100, 1
-                    ) { dialogModel, dialogResult ->
+                    , { dialogModel, dialogResult ->
                         if (dialogResult == DialogResult.Accept) {
                             finetuneBtn.setPiecewiseFunction(dialogModel!!.model)
                             model.fineTuneCentOffsetEnv = dialogModel.model
@@ -170,7 +186,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                             finetuneBtn.setPiecewiseFunction(null)
                             model.fineTuneCentOffsetEnv = null
                         }
-                    }
+                    })
                     stage.addActor(dialog.fadeIn())
                 }
             }
@@ -183,7 +199,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
             url->
             println("clicked finetune")
         }
-        finetuneSpinner = Spinner("", IntSpinnerModel(0,-100, 100, 1))
+        finetuneSpinner = Spinner("", IntSpinnerModel(model.fineTuneCentOffset,-100, 100, 1))
         finetuneSpinner.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 val intModel = finetuneSpinner.model as IntSpinnerModel
@@ -199,8 +215,9 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
             url->
             println("clicked gain link label")
         }
+        gainBtn.setPiecewiseFunction(model.amplitudeEnv)
         gainSlider = Slider(0f, 1f, .01f, false, skin)
-        gainSlider.value = 1f
+        gainSlider.value = model.amplitude
         gainSlider.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 debug("gain changed : "+gainSlider.value)
@@ -222,7 +239,7 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
             }
         })
 
-        unisonSpinner = Spinner("", IntSpinnerModel(1,0, 10, 1))
+        unisonSpinner = Spinner("", IntSpinnerModel(model.unisonVoices,0, 10, 1))
         unisonSpinner.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 val intModel = unisonSpinner.model as IntSpinnerModel
@@ -230,6 +247,32 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                 model.unisonVoices = intModel.value
                 unisonChangeListener?.invoke(intModel.value)
             }
+        })
+
+        val btnAddEffect = TextButton("Add effect", skin)
+        btnAddEffect.addListener(object : ClickListener(){
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                val effectDialog = EffectDialog("Select Effect", effectRepository,{selection->
+                    selection.filter{!model.effectIds.any{effect->effect.nameId == it}}.forEach{effectId ->
+                        eventBus.post(AddEffectToOscillatorRequest(model, EffectRef(effectId,true)))
+                    }
+                })
+                stage.addActor(effectDialog)
+            }
+        })
+
+        val btnDeleteEffect = TextButton("Delete effect", skin)
+        btnDeleteEffect.isDisabled = true
+        btnDeleteEffect.addListener(object : ClickListener(){
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                effectListAdapter.selection.forEach {
+                    eventBus.post(RemoveEffectFromOscillatorRequest(it, model))
+                }
+            }
+        })
+        effectListAdapter.setItemClickListener({item->
+            val selection = effectListAdapter.selection
+            btnDeleteEffect.isDisabled = selection.none()
         })
 
         val waveformSelectRow = Table()
@@ -245,7 +288,6 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         waveformSelectRow.left()
         add(waveformSelectRow).left().growX()
         row()
-//        waveformSelectRow.debug = true
 
         val semitonesRow = Table()
         semitonesRow.padLeft(5f).padRight(5f)
@@ -271,6 +313,16 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         bottomRow.add(gainSlider).growX()
         add(bottomRow).left().growX()
         row()
+
+        val effectTable = Table()
+        val effectAddDeleteTable = Table()
+        effectAddDeleteTable.add(btnAddEffect).growX().padRight(5f).padLeft(5f)
+        effectAddDeleteTable.add(btnDeleteEffect).growX().padRight(5f)
+        effectTable.add(effectAddDeleteTable).growX()
+        effectTable.row()
+
+        effectTable.add(editEnvelopeListView.mainTable).growX().height(100f)
+        add(effectTable).left().growX()
 
         showDutyCycleOptions(false)
 
@@ -328,23 +380,27 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
         if (models.none()){
             showNoEnvelopesDialog()
         }else {
-            val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Semitone Offset", skin,
+            val minStart = model.semitoneEnvelopeRange?.min ?: 0
+            val maxStart = model.semitoneEnvelopeRange?.max ?: 0
+            var dialogWindow : VisWindow? = null
+            val dialog = FunctionSelectorDialog.IntBoundFunctionDialog("Semitone Offset", skin,stage,
                     models,
                     "Starting semitone offset:",
                     "Ending semitone offset:",
-                    0, -100, 100, 1
-            ) { dialogModel, dialogResult ->
+                    0, -100, 100, 1,
+             { dialogModel, dialogResult ->
                 if (dialogResult == DialogResult.Accept) {
                     if(dialogModel==null) {
                         val okDialog = Dialogs.showOKDialog(stage, "Missing Envelope", "Must select an envelope to continue")
                         okDialog.addCloseButton()
                         okDialog.closeOnEscape()
+                        okDialog.fadeIn()
                         okDialog.addListener(object : ChangeListener() {
                             override fun changed(event: ChangeEvent?, actor: Actor?) {
-                                showToneSelectionDialog()
+//                                showToneSelectionDialog()
                             }
-
                         })
+                        dialogWindow!!.remove()
                         stage.addActor(okDialog)
                     }else {
                         semitonesBtn.setPiecewiseFunction(dialogModel.model)
@@ -355,7 +411,8 @@ class OscilatorPanel(var model : OscillatorModel, val waveformFactory : StreamFa
                     semitonesBtn.setPiecewiseFunction(null)
                     model.semitoneOffsetEnv = null
                 }
-            }
+            },minStart, maxStart)
+            dialogWindow = dialog
             dialog.closeOnEscape()
             stage.addActor(dialog.fadeIn())
         }

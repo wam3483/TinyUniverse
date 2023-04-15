@@ -7,19 +7,22 @@ import com.pixelatedmind.game.tinyuniverse.generation.music.synth.effect.UnisonE
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.Envelope
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.envelope.EnvelopeFactory
 import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.*
-import com.pixelatedmind.game.tinyuniverse.generation.music.synth.stream.waveform.SineWaveform
+import com.pixelatedmind.game.tinyuniverse.ui.EffectRepository
 import com.pixelatedmind.game.tinyuniverse.ui.model.OscillatorModel
 
-class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel, val waveformStreamFactory: StreamFactory, val noteUtil : Notes) : EnvelopeFactory {
+class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel,
+                                     val waveformStreamFactory: StreamFactory,
+                                     val effectRepository : EffectRepository,
+                                     val noteUtil : Notes) : EnvelopeFactory {
 
-    private fun getWaveformStream(frequencyInput : FloatInputStream) : FloatInputStream {
-        var dutyCycleStream : FloatInputStream? = null
+    private fun getWaveformStream(frequencyInput : FloatInputStream, phase : Float) : FloatInputStream {
+        var dutyCycleStream : FloatInputStream?
         if(oscillatorModel.dutyCycleEnv != null){
             dutyCycleStream = PiecewiseStream(oscillatorModel.dutyCycleEnv!!)
         }else{
             dutyCycleStream = ConstantStream(oscillatorModel.dutyCycle)
         }
-        return waveformStreamFactory.new(oscillatorModel.baseWaveformId, dutyCycleStream, frequencyInput)
+        return waveformStreamFactory.new(oscillatorModel.baseWaveformId, dutyCycleStream, frequencyInput, phase)
     }
 
     private fun getAmplitudeStream(stream : FloatInputStream,  releaseListeners : MutableList<()->Unit>, completeListener : ()->Unit) : FloatInputStream {
@@ -40,8 +43,8 @@ class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel, val 
         var semitoneStream : FloatInputStream
         if(oscillatorModel.semitoneOffsetEnv != null){
             val semitoneFunc = oscillatorModel.semitoneOffsetEnv!!.copy()
-            val startSemitoneIndex = semitones + oscillatorModel.semitoneEnvelopeRange!!.min
-            val endSemitoneIndex = semitones + oscillatorModel.semitoneEnvelopeRange!!.max
+            val startSemitoneIndex = semitones + oscillatorModel.semitoneEnvelopeRange!!.min!!
+            val endSemitoneIndex = semitones + oscillatorModel.semitoneEnvelopeRange!!.max!!
             semitoneFunc.startY = noteUtil.midi[startSemitoneIndex]
             semitoneFunc.endY = noteUtil.midi[endSemitoneIndex]
 
@@ -85,11 +88,24 @@ class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel, val 
         return CentOffsetStream(centStream, baseFrequencyStream, noteUtil)
     }
 
-    private fun getBaseStream(frequency : Float, releaseListeners : MutableList<()->Unit>) : FloatInputStream{
+    private fun getBaseStream(frequency : Float, releaseListeners : MutableList<()->Unit>, phase : Float = 0f) : FloatInputStream{
         val semitoneOffsetStream = getSemitoneOffsetStream(frequency, releaseListeners)
         val centOffsetStream = getCentStream(semitoneOffsetStream, releaseListeners)
-        val waveformStream = getWaveformStream(centOffsetStream)
+        val waveformStream = getWaveformStream(centOffsetStream, phase)
         return waveformStream
+    }
+
+    private fun applyEffects(inputStream : FloatInputStream) : FloatInputStream{
+        var stream = inputStream
+        oscillatorModel.effectIds.forEach{effectId ->
+            if(effectId.enabled) {
+                val effectFactory = effectRepository.get(effectId.nameId)
+                if (effectFactory != null) {
+                    stream = effectFactory.new(stream)
+                }
+            }
+        }
+        return stream
     }
 
     override fun newEnvelope(frequency: Float): Envelope {
@@ -99,10 +115,11 @@ class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel, val 
             UnisonEffect(frequency,
             {
                 detunedFrequency ->
-                val waveformStream = getBaseStream(detunedFrequency, releaseListeners)
+                val phaseRandomization = (Math.PI * 2 * (Math.random())).toFloat()
+                val waveformStream = getBaseStream(detunedFrequency, releaseListeners, 0f)
                 waveformStream
             },
-            oscillatorModel.unisonVoices,.1f)
+            oscillatorModel.unisonVoices,1f)
         }
         else{
             getBaseStream(frequency, releaseListeners)
@@ -115,6 +132,9 @@ class OscillatorModelEnvelopeFactory(val oscillatorModel : OscillatorModel, val 
 
         val amplitudeAdjustedStream = getAmplitudeStream(baseStream, releaseListeners, completeCallback)
         var stream : FloatInputStream = amplitudeAdjustedStream
+
+        stream = applyEffects(stream)
+
         stream = StartTimeEffect(stream)
         result = EnvelopeStream(stream)
         //when a release event is triggered all registered streams will be notified
