@@ -172,6 +172,9 @@ class SynthesizerWindow : ApplicationAdapter(){
                 piecewiseModelRepo, envelopeList,
                 effectRepository, effectsTable)
         eventbus.register(clearProjectListener::onClearProjectEvent)
+
+        val reverbHandler = CreateReverbEffectHandler(eventbus, effectsTable, piecewiseModelRepo, skin)
+        eventbus.register(reverbHandler::onCreateReverbEffectRequest)
     }
 
     private fun buildEffectsSubmenu() : MenuItem{
@@ -179,10 +182,19 @@ class SynthesizerWindow : ApplicationAdapter(){
 
         val effectsMenu = PopupMenu()
         val lowPassMenuItem = MenuItem("Low Pass")
+        val reverbMenuItem = MenuItem("Reverb")
+
         effectsMenu.addItem(lowPassMenuItem)
+        effectsMenu.addItem(reverbMenuItem)
+
         lowPassMenuItem.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent, actor: Actor) {
                 eventbus.post(CreateLowPassEffectRequest())
+            }
+        })
+        reverbMenuItem.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent, actor: Actor) {
+                eventbus.post(CreateReverbEffectRequest())
             }
         })
 
